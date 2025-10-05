@@ -38,7 +38,7 @@ The private agents are stored in a separate private repository and included as a
 
 ```bash
 # Add your private agents repo as a submodule
-git submodule add git@github.com:yourusername/private-agents.git agents/private
+git submodule add https://github.com/DerekMaggio/claude-code-private-agents.git agents/private
 
 # Commit the submodule configuration
 git add .gitmodules agents/private
@@ -49,13 +49,25 @@ git commit -m "feat: add private agents submodule"
 
 ```bash
 # Clone with submodules initialized
-git clone --recurse-submodules git@github.com:yourusername/claude-code-config.git
+git clone --recurse-submodules https://github.com/DerekMaggio/claude-code-config.git
 
 # Or if already cloned, initialize submodule
 git submodule update --init
 ```
 
-**Updating private agents:**
+**Updating agents:**
+
+```bash
+# Update both public agents and private submodule
+git pull origin main
+git submodule update --remote --merge
+
+# Commit the updated submodule reference if changes were pulled
+git add agents/private
+git commit -m "chore: update private agents"
+```
+
+**Updating only private agents:**
 
 ```bash
 # Pull latest changes from private agents repo
