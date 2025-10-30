@@ -17,6 +17,26 @@
 - Fall back to Bash Git commands for complex operations not covered by MCP tools
 - Never commit automatically - always require explicit user permission
 
+## Pull Request Creation Policy
+
+**CRITICAL: NEVER create pull requests without explicit user approval.**
+
+### Required Process:
+1. Draft the PR body text
+2. Show it to the user with: "Here's the PR description I've drafted. Should I create it?"
+3. Wait for explicit approval ("yes", "looks good", "create it", etc.)
+4. Only then use `gh pr create`
+
+### This applies to:
+- ALL `gh pr create` commands
+- ALL `gh pr edit` commands that modify body or title
+- NO EXCEPTIONS - even for "simple" or "obvious" PRs
+
+### Treatment:
+Treat PR creation exactly like git commits - ALWAYS get approval first.
+
+**If you find yourself about to run `gh pr create`, STOP and show the user the PR description first.**
+
 ## Documentation Style
 - **Follow documentation preferences** detailed in `claude_documentation_preferences.md`
 - Use consistent structure, emoji hierarchy, and technical precision
@@ -25,10 +45,20 @@
 
 ## Repository Structure
 
-This repository separates public and private agents using Git submodules:
+This repository contains both agents and skills for extending Claude Code functionality:
+
+### Agents
+
+Agents are specialized AI assistants with separate context windows:
 
 - **agents/public/** - Publicly shared agents (committed to this repo)
 - **agents/private/** - Private agents (Git submodule to private repository)
+
+### Skills
+
+Skills are reusable capability packages that Claude discovers automatically:
+
+- **skills/** - Custom skills for workflows and procedures (committed to this repo)
 
 ### Private Agents Submodule
 
@@ -87,7 +117,8 @@ This repository should be symlinked to your personal Claude configuration for ea
 ### Required Symlinks
 
 1. **Agents directory**: Link entire `agents/` directory structure to `~/.claude/agents/` (maintains subdirectories)
-2. **Configuration file**: Link CLAUDE.md to `~/.claude/CLAUDE.md`
+2. **Skills directory**: Link entire `skills/` directory structure to `~/.claude/skills/` (maintains subdirectories)
+3. **Configuration file**: Link CLAUDE.md to `~/.claude/CLAUDE.md`
 
 ### Setup Commands
 
@@ -112,6 +143,20 @@ for subdir in "$REPO_PATH"/agents/*/; do
   ln -sf "$subdir" ~/.claude/agents/"$subdir_name"
 done
 
+# Backup existing skills directory if it exists and is not a symlink
+if [ -d ~/.claude/skills ] && [ ! -L ~/.claude/skills ]; then
+  mv ~/.claude/skills ~/.claude/skills.backup.$(date +%Y%m%d_%H%M%S)
+fi
+
+# Create skills directory
+mkdir -p ~/.claude/skills
+
+# Create symlinks for each skill
+for skill in "$REPO_PATH"/skills/*/; do
+  skill_name=$(basename "$skill")
+  ln -sf "$skill" ~/.claude/skills/"$skill_name"
+done
+
 # Create symlink for configuration file (overwrite existing)
 ln -sf "$REPO_PATH/CLAUDE.md" ~/.claude/CLAUDE.md
 ```
@@ -122,6 +167,7 @@ On each session startup, verify these symlinks exist:
 
 - Check if `~/.claude/CLAUDE.md` is a symlink pointing to this repository
 - Check if subdirectories in `~/.claude/agents/` (public/, private/) are symlinked to this repository's `agents/` subdirectories
+- Check if subdirectories in `~/.claude/skills/` are symlinked to this repository's `skills/` subdirectories
 - If symlinks are missing or broken, suggest the setup commands above to the user
 
-This ensures your custom agents and configuration are always available across all Claude Code sessions.
+This ensures your custom agents, skills, and configuration are always available across all Claude Code sessions.
