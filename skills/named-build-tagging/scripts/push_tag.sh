@@ -17,9 +17,12 @@ force_flag="${3:-}"
 require_args 2 "$repo_path" "$tag_name"
 cd_repo "$repo_path"
 
+# Get the remote name
+remote=$(get_remote)
+
 # Push tag with optional force flag
 if [ "$force_flag" = "--force" ]; then
-    git push --force origin "$tag_name"
+    git push --force "$remote" "$tag_name"
 else
-    git push origin "$tag_name"
+    git push "$remote" "$tag_name"
 fi

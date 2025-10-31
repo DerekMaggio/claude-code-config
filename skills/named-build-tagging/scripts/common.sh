@@ -41,16 +41,30 @@ require_args() {
 cd_repo() {
     local repo_path="$1"
     validate_absolute_path "$repo_path"
-    
+
     if [ ! -d "$repo_path" ]; then
         echo "Error: Repository path does not exist: $repo_path" >&2
         exit 1
     fi
-    
+
     if [ ! -d "$repo_path/.git" ]; then
         echo "Error: Not a git repository: $repo_path" >&2
         exit 1
     fi
-    
+
     cd "$repo_path"
+}
+
+# Gets the primary remote name for the repository
+# Usage: get_remote
+# Must be called after cd_repo
+# Returns: The name of the first remote (typically 'origin')
+# Exit: 1 if no remote exists
+get_remote() {
+    local remote=$(git remote | head -n1)
+    if [ -z "$remote" ]; then
+        echo "Error: No remote found in repository" >&2
+        exit 1
+    fi
+    echo "$remote"
 }

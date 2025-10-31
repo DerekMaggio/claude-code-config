@@ -21,13 +21,22 @@ ref="${2:-}"
 require_args 1 "$repo_path"
 cd_repo "$repo_path"
 
+# Get the remote name
+remote=$(get_remote)
+
 # Fetch latest
-git fetch --quiet 2>&1
+git fetch "$remote" --quiet 2>&1
 
 if [ -z "$ref" ]; then
     # Get default branch
-    git remote set-head origin --auto 2>&1 >/dev/null
-    ref=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+    git remote set-head "$remote" --auto 2>&1 >/dev/null
+    ref=$(git symbolic-ref "refs/remotes/$remote/HEAD" | sed "s@^refs/remotes/$remote/@@")
+    ref="$remote/$ref"
+else
+    # Always use remote - prefix with remote/ if not already a remote ref
+    if [[ ! "$ref" =~ / ]]; then
+        ref="$remote/$ref"
+    fi
 fi
 
 # Get commit info

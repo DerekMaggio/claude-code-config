@@ -16,4 +16,8 @@ tag_name="$2"
 
 require_args 2 "$repo_path" "$tag_name"
 cd_repo "$repo_path"
-git push --dry-run origin "$tag_name"
+
+# Get the remote name
+remote=$(get_remote)
+
+git push --dry-run "$remote" "$tag_name"
