@@ -1,6 +1,6 @@
 ---
 name: python-class-architect
-description: Use this agent when you need to design, write, or refactor Python code using object-oriented programming principles. Examples include: creating new classes from scratch, converting procedural code to class-based architecture, implementing design patterns, structuring complex data models, or when you want guidance on proper class design, inheritance hierarchies, and encapsulation strategies.
+description: "Use this agent when you need to design, write, or refactor Python code using object-oriented programming principles. Examples include: creating new classes from scratch, converting procedural code to class-based architecture, implementing design patterns, structuring complex data models, or when you want guidance on proper class design, inheritance hierarchies, and encapsulation strategies."
 model: sonnet
 color: green
 ---

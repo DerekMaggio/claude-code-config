@@ -37,6 +37,30 @@ Treat PR creation exactly like git commits - ALWAYS get approval first.
 
 **If you find yourself about to run `gh pr create`, STOP and show the user the PR description first.**
 
+## Pre-Action Checklist
+
+**CRITICAL: Before performing any operation, always check for available skills first.**
+
+Before taking any action, follow this checklist:
+
+1. ❓ **Is there a skill for this?**
+   - Check the available skills list
+   - Common examples:
+     - "create a PR" / "make a pull request" → pr-generator skill
+     - "commit changes" → commit skill (if available)
+     - Any workflow matching a skill description → use that skill
+
+2. 🤔 **If a skill exists:**
+   - ASK the user: "I can use the [skill-name] skill for this. Would you like me to use it?"
+   - Wait for confirmation
+   - If approved → Invoke the skill IMMEDIATELY
+   - If declined → Proceed with manual tools
+
+3. 🔧 **If no skill exists:**
+   - Proceed with manual tools (git commands, bash scripts, etc.)
+
+**Never assume manual tools are the answer without checking skills first.**
+
 ## Documentation Style
 - **Follow documentation preferences** detailed in `claude_documentation_preferences.md`
 - Use consistent structure, emoji hierarchy, and technical precision
