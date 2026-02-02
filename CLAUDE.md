@@ -1,23 +1,42 @@
 ## CLAUDE.md — Workflow & Invariants
 
-### 1. Engagement Mode (Mandatory First Step)
-Before any technical work, Claude MUST determine the engagement mode through an interview.
+### 0. Mode Selection (Before Everything)
+Claude MUST classify the user's request and confirm the engagement mode before doing anything else.
+
+1. Claude MUST propose a mode based on the user's request:
+   > "This sounds like **[Mode A: Scoped Work]** / **[Mode B: Exploratory/Debug]**. Should I proceed with that framing?"
+2. **HARD GATE — No work of any kind until mode is confirmed.** Claude MUST NOT read files, run commands, search code, analyze structure, or begin any investigation until the user explicitly confirms the engagement mode. Inferring agreement from context or continuation is not permitted.
+3. If the request is ambiguous, Claude MUST ask a clarifying question rather than assume a mode.
+4. Once the mode is confirmed, proceed to the corresponding section below.
+
+---
+
+### 1. Engagement Mode Gates
+After the user confirms the engagement mode, Claude MUST complete the appropriate gate before beginning work.
 
 #### Mode A — Scoped Work (Implementation)
 **Purpose:** Implement a defined change with verifiable outcomes.
 
 **Requirements:**
 - **Ticket ID:** Mandatory. If missing, invoke `ticket-creator` skill.
-- **DoD Interview:** Claude MUST produce a Definition of Done (DoD) as **verifiable facts**:
-  - ✅ "API returns 200 status code for GET /health"
-  - ✅ "CLI command `aws s3 ls` succeeds without errors"
-  - ❌ "The feature works" (too vague)
-- **No work begins** until the DoD is explicit and agreed upon.
+- **DoD Interview → Approval Gate:**
+  1. Claude MUST interview to produce a Definition of Done (DoD) as **verifiable facts**:
+     - ✅ "API returns 200 status code for GET /health"
+     - ✅ "CLI command `aws s3 ls` succeeds without errors"
+     - ❌ "The feature works" (too vague)
+  2. Claude MUST present the DoD as a numbered checklist and explicitly ask:
+     > "Here is the proposed Definition of Done. Do you approve this DoD? I will not begin any work until you confirm."
+  3. **HARD GATE — No work until explicit approval.** Claude MUST NOT execute any commands, write any code, read any files, create any branches, or begin any investigation until the user responds with explicit approval of the DoD. Silence, continuation of conversation, or lack of objection do NOT constitute approval.
+  4. If the user modifies or questions any DoD item, Claude MUST re-present the **full updated DoD** and repeat the approval ask. Partial acknowledgments do not satisfy this gate.
 
 #### Mode B — Exploratory / Debug (RCA)
 **Purpose:** Discovery, log analysis, and Root Cause Analysis.
 
-**Setup:** Establish a **Mission Objective** (e.g., "Identify why API latency is spiking above 500ms").
+**Setup — Mission Objective → Approval Gate:**
+1. Establish a **Mission Objective** (e.g., "Identify why API latency is spiking above 500ms").
+2. Claude MUST present the Mission Objective and explicitly ask:
+   > "Here is the proposed Mission Objective. Do you approve? I will not begin any investigation until you confirm."
+3. **HARD GATE — No work until explicit approval.** Same rules as Mode A: no commands, no file reads, no investigation until the user explicitly approves.
 
 **Discovery Ledger:** Claude MUST maintain this table to track hypothesis testing.
 **Limit:** If 5 hypotheses are disproven without reaching the Mission Objective, Claude MUST stop and propose a "Mission Reset" (Zoom out, Pivot, or Clean Slate).
@@ -36,7 +55,7 @@ Before any technical work, Claude MUST determine the engagement mode through an 
 
 ---
 
-### 2. Development Protocol — The History Architect
+### 2. Development Protocol — The History Architect (Mode A Only)
 
 #### Logical Commit Rule (Functional Layers)
 A commit represents ONE **Functional Layer** — a complete capability, not a mechanical step.
