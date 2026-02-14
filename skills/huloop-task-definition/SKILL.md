@@ -1,0 +1,55 @@
+---
+name: huloop-task-definition
+description: This skill orchestrates the decomposition of an approved Parent MVR (from a Triage Sheriff approved project) into a series of verifiable Child MVTs by invoking the 'task-architect' agent.
+allowed-tools: [Task, Read, Write, Glob, Bash, AskUserQuestion, Skill]
+---
+
+# HuLoop Task Definition
+
+This skill manages the second major stage of the MVR workflow: taking an approved Parent MVR project and breaking it down into a series of actionable Child MVTs (Minimum Viable Tasks).
+
+## Workflow
+
+### 1. Acquire Approved MVR Project
+1.  **Monitor Input**: The skill monitors the `[VAULT_ROOT]/Workflows/huloop-request-triage/triage-sheriff-approved/` directory for new project folders.
+2.  **Selection**: The skill displays a list of all identified projects to the user, clearly categorized by their state (New, In Progress, Finished, Approved).
+    -   **Default**: The skill automatically selects all "New" projects for processing.
+    -   **Manual Override**: The user can manually select any existing project (In Progress, Finished, or Approved) for re-processing.
+
+### 2. Prepare the Task Architect's Workspace
+1.  **Create Project Folder**: The skill creates a new folder of the same name within the Task Architect's unapproved workspace: `[VAULT_ROOT]/Workflows/huloop-task-definition/task-architect-unapproved/<project-name>/`.
+2.  **Copy Parent MVR**: It copies the essential `MVR.md` file from the source project directory (e.g., `triage-sheriff-approved/cloud-to-on-prem-failover/MVR.md`) into the newly created folder.
+
+### 3. Invoke Gemini for Decomposition
+
+1.  **Delegate to Gemini**: Invoke the `gemini-delegate` skill in **synthesis mode** to decompose the MVR.
+
+    Use the prompt template at `prompts/gemini-architect.md` with these variables:
+    - `MVR_PATH`: Path to `$PROJECT_DIR/MVR.md`
+    - `PROJECT_DIR`: Path to the project directory (for additional context)
+    - `OUTPUT_DIR`: Path to `$PROJECT_DIR` (where MVT files will be written)
+
+    **Gemini's Mission**:
+    - Read the Parent MVR thoroughly
+    - Decompose it into multiple Child MVT files (`MVT-001-*.md`, `MVT-002-*.md`, etc.)
+    - Ensure all "Rules of the Firm" are followed (8-hour rule, verifiable, precise)
+    - Write the Child MVT files directly to the project directory
+
+### 4. Finalize Handoff
+1.  **Verify Output**: Confirm that Gemini successfully populated the project directory with new Child MVT files (check for `MVT-*.md` pattern).
+2.  **Signal Completion**: Report that the decomposition is complete and the resulting Child MVTs are now awaiting human review in the `task-architect-unapproved/<project-name>/` directory.
+
+## Fallback
+
+If Gemini is unavailable, fall back to spawning the `task-architect` Claude subagent:
+
+```text
+subagent_type: task-architect
+prompt: |
+  You are the Task Architect. You have been placed inside a project directory that contains a Parent MVR. Execute your mission as defined in your persona file.
+
+  TASK:
+  - Decompose the `MVR.md` in this directory into multiple, verifiable, 8-hour Child MVT files.
+  - Place the new Child MVT files in this same directory.
+  - Ensure all "Rules of the Firm" are followed.
+```
