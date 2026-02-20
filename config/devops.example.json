@@ -1,0 +1,20 @@
+{
+  "jira_cloud_id": "YOUR_CLOUD_ID",
+  "jira_domain": "yourcompany.atlassian.net",
+  "jira_project_key": "DEVOPS",
+  "jira_task_type_id": "10027",
+  "jira_ac_field": "customfield_10037",
+  "jira_customer_field": "customfield_10962",
+  "jira_default_customer_id": "YOUR_DEFAULT_CUSTOMER_ID",
+  "jira_all_customers_id": "YOUR_ALL_CUSTOMERS_ID",
+  "jira_customer_deployment_type_id": "YOUR_CUSTOMER_DEPLOYMENT_ISSUE_TYPE_ID",
+  "jira_deployment_start_field": "customfield_10110",
+  "jira_deployment_end_field": "customfield_10111",
+  "vault_root_name": "your-devcloud-vault",
+  "vault_path": "/path/to/your/vault",
+  "vault_workflow_root": "Workflows",
+  "salesforce_org_alias": "your-sf-alias",
+  "github_org": "YourGitHubOrg",
+  "ansible_repo": "your-ansible-repo",
+  "company_name": "YourCompany"
+}

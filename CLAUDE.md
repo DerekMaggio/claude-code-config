@@ -1,197 +1,89 @@
-# Derek's Claude Configuration
+### 0. Mode Selection (Before Everything)
+Claude MUST classify the user's request and confirm the engagement mode before doing anything else.
 
-## Git Workflow with GitKraken MCP
-- Proactively suggest commits after completing working changes
-- Use conventional commit format (feat:, fix:, docs:, refactor:, test:, chore:)
-- Make commits small and logical - each representing one complete, working change
-- Always ask permission before committing: "Would you like me to commit these changes with: `[conventional commit message]`?"
-- Suggest commits when:
-  ✅ After adding a complete feature
-  ✅ After fixing a bug
-  ✅ After updating documentation
-  ✅ After refactoring that maintains functionality
-  ❌ Never after partial/broken implementations
+1. Claude MUST propose a mode based on the user's request:
+   > "This sounds like **[Mode A: Scoped Work]** / **[Mode B: Exploratory/Debug]**. Should I proceed with that framing?"
+2. **HARD GATE — No work of any kind until mode is confirmed.** Claude MUST NOT read files, run commands, search code, analyze structure, or begin any investigation until the user explicitly confirms the engagement mode.
+3. If the request is ambiguous, Claude MUST ask a clarifying question rather than assume a mode.
+4. Once the mode is confirmed, proceed to the corresponding section below.
 
-## GitKraken MCP Usage
-- Use GitKraken MCP tools for structured Git operations when possible
-- Fall back to Bash Git commands for complex operations not covered by MCP tools
-- Never commit automatically - always require explicit user permission
+**Mode-Exempt Skills:** The following skills bypass mode selection entirely. When invoked, execute them directly:
+- `monthly-customer-scheduling` — Self-contained workflow with its own validation gates
+- `github-workflow-monitor` — Trigger and monitor a GitHub Actions workflow
+- `install4j-doc-expert` — Tiered documentation lookup; executes directly without mode gates
 
-## Pull Request Creation Policy
 
-**CRITICAL: NEVER create pull requests without explicit user approval.**
+---
 
-### Required Process:
-1. Draft the PR body text
-2. Show it to the user with: "Here's the PR description I've drafted. Should I create it?"
-3. Wait for explicit approval ("yes", "looks good", "create it", etc.)
-4. Only then use `gh pr create`
+### 4. Skill-Specific Handling (Deterministic Reporting)
+The agent MUST NOT perform automatic Root Cause Analysis (RCA), log investigation, or "Next Steps" generation for the output of the following skills:
 
-### This applies to:
-- ALL `gh pr create` commands
-- ALL `gh pr edit` commands that modify body or title
-- NO EXCEPTIONS - even for "simple" or "obvious" PRs
+- **github-workflow-monitor**: This skill provides a deterministic report. If the output contains `RAW WORKFLOW DATA` or is wrapped in `<details>` blocks, the agent MUST simply present the data and wait for user input. Do NOT attempt to "fix" or "analyze" a workflow failure unless explicitly requested by the user.
 
-### Treatment:
-Treat PR creation exactly like git commits - ALWAYS get approval first.
+---
 
-**If you find yourself about to run `gh pr create`, STOP and show the user the PR description first.**
+### 1. Engagement Mode Gates
+After the user confirms the engagement mode, Claude MUST complete the appropriate gate before beginning work.
 
-## Pre-Action Checklist
+#### Mode A — Scoped Work (Implementation)
+**Purpose:** Implement a defined change with verifiable outcomes.
 
-**CRITICAL: Before performing any operation, always check for available skills first.**
+**Requirement: Ticket Discovery & Content Approval**
+1. **Case 1: Existing Ticket ID Provided**
+   - Claude MUST invoke the **devops-task-retriever** skill to fetch Summary, Description, Acceptance Criteria (`customfield_10037`), and Customer (`customfield_10962`).
+   - Claude MUST present these details and ask: 
+     > "I've retrieved Ticket [ID]. I will use the Acceptance Criteria as my Definition of Done (DoD). Do you confirm this is the correct scope?"
+   - **GATE:** If the Acceptance Criteria is too vague for DoD, Claude MUST use `AskUser` to refine them into verifiable facts.
 
-Before taking any action, follow this checklist:
+2. **Case 2: No Ticket ID (New Work)**
+   - **Discovery Interview:** Claude MUST use the `AskUser` task to interview the user for: **Summary, Description, HuLoop Customer,** and **Definition of Done (DoD)** as verifiable facts.
+   - **Content Review:** Claude MUST present the gathered information:
+     > **Proposed Ticket Details:**
+     > - **Summary:** [Text]
+     > - **Description:** [Text]
+     > - **Customer:** [Text]
+     > - **Acceptance Criteria (DoD):** [Numbered List]
+     > 
+     > "Does this look correct? Once confirmed, I will create the ticket and obtain an ID."
+   - **Ticket Creation & ID Retrieval:** After confirmation, Claude MUST invoke the **devops-task-creator** skill.
+   - **HARD GATE:** Claude MUST NOT proceed to the Final Approval Gate until the Ticket ID has been successfully generated and presented to the user.
 
-1. ❓ **Is there a skill for this?**
-   - Check the available skills list
-   - Common examples:
-     - "create a PR" / "make a pull request" → pr-generator skill
-     - "commit changes" → commit skill (if available)
-     - Any workflow matching a skill description → use that skill
+3. **Final Approval Gate (The Work Gate)**
+   - Once a Ticket ID and specific DoD/Acceptance Criteria are established, Claude MUST ask:
+     > "Scope is locked with Ticket [ID]. Should I begin implementation?"
+   - **HARD GATE:** Claude MUST NOT execute any commands, write code, read files, or create branches until the user provides explicit approval to start.
 
-2. 🤔 **If a skill exists:**
-   - ASK the user: "I can use the [skill-name] skill for this. Would you like me to use it?"
-   - Wait for confirmation
-   - If approved → Invoke the skill IMMEDIATELY
-   - If declined → Proceed with manual tools
+#### Mode B — Exploratory / Debug (RCA)
+**Purpose:** Discovery, log analysis, and Root Cause Analysis.
 
-3. 🔧 **If no skill exists:**
-   - Proceed with manual tools (git commands, bash scripts, etc.)
+**Setup — Mission Objective → Approval Gate:**
+1. Establish a **Mission Objective**.
+2. Claude MUST present the Mission Objective and explicitly ask for approval.
+3. **HARD GATE — No work until explicit approval.**
 
-**Never assume manual tools are the answer without checking skills first.**
+**Discovery Ledger:** Claude MUST maintain this table to track hypothesis testing.
 
-## Documentation Style
-- **Follow documentation preferences** detailed in `claude_documentation_preferences.md`
-- Use consistent structure, emoji hierarchy, and technical precision
-- Always include practical examples and troubleshooting sections
-- Reference the preferences file when writing or updating any documentation
+| Hypothesis | Test/Command | Expected | Actual | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| e.g. DB Pool | Check metrics | <80% usage | 95% usage | ✅ Root Cause |
 
-## Repository Structure
+---
 
-This repository contains both agents and skills for extending Claude Code functionality:
+### 2. Development Protocol — The History Architect (Mode A Only)
 
-### Agents
+#### Logical Commit Rule (Functional Layers)
+A commit represents ONE **Functional Layer** — a complete capability, not a mechanical step.
+**Format:** `<type>(<scope>): <description> [TICKET-123]`
+**Body:** Explain **why** (the intent), not **what** (the diff).
 
-Agents are specialized AI assistants with separate context windows:
+---
 
-- **agents/public/** - Publicly shared agents (committed to this repo)
-- **agents/private/** - Private agents (Git submodule to private repository)
+### 3. PR & Approval Workflow
 
-### Skills
+#### The Consent Gate (Before PR Creation)
+Claude MUST complete these steps before proposing a PR:
+1. **Verification:** Re-verify EVERY DoD item against actual system state.
+2. **Pre-Flight Check:** Generate PR description mapping commits to Acceptance Criteria and verification results.
+3. **Explicit Approval:** Get approval before running `gh pr create`.
 
-Skills are reusable capability packages that Claude discovers automatically:
-
-- **skills/** - Custom skills for workflows and procedures (committed to this repo)
-
-### Private Agents Submodule
-
-The private agents are stored in a separate private repository and included as a Git submodule. Users without access to the private repo will simply have an empty `agents/private/` directory.
-
-**Initial setup of private submodule:**
-
-```bash
-# Add your private agents repo as a submodule
-git submodule add https://github.com/DerekMaggio/claude-code-private-agents.git agents/private
-
-# Commit the submodule configuration
-git add .gitmodules agents/private
-git commit -m "feat: add private agents submodule"
-```
-
-**Cloning this repo with private agents:**
-
-```bash
-# Clone with submodules initialized
-git clone --recurse-submodules https://github.com/DerekMaggio/claude-code-config.git
-
-# Or if already cloned, initialize submodule
-git submodule update --init
-```
-
-**Updating agents:**
-
-```bash
-# Update both public agents and private submodule
-git pull origin main
-git submodule update --remote --merge
-
-# Commit the updated submodule reference if changes were pulled
-git add agents/private
-git commit -m "chore: update private agents"
-```
-
-**Updating only private agents:**
-
-```bash
-# Pull latest changes from private agents repo
-cd agents/private
-git pull origin main
-cd ../..
-
-# Commit the updated submodule reference
-git add agents/private
-git commit -m "chore: update private agents"
-```
-
-## Setup Instructions
-
-This repository should be symlinked to your personal Claude configuration for easy access to agents and settings.
-
-### Required Symlinks
-
-1. **Agents directory**: Link entire `agents/` directory structure to `~/.claude/agents/` (maintains subdirectories)
-2. **Skills directory**: Link entire `skills/` directory structure to `~/.claude/skills/` (maintains subdirectories)
-3. **Configuration file**: Link CLAUDE.md to `~/.claude/CLAUDE.md`
-
-### Setup Commands
-
-```bash
-# Get the current repository path
-REPO_PATH=$(pwd)
-
-# Initialize submodules (private agents)
-git submodule update --init
-
-# Backup existing agents directory if it exists and is not a symlink
-if [ -d ~/.claude/agents ] && [ ! -L ~/.claude/agents ]; then
-  mv ~/.claude/agents ~/.claude/agents.backup.$(date +%Y%m%d_%H%M%S)
-fi
-
-# Create agents directory
-mkdir -p ~/.claude/agents
-
-# Create symlinks for each subdirectory (public and private)
-for subdir in "$REPO_PATH"/agents/*/; do
-  subdir_name=$(basename "$subdir")
-  ln -sf "$subdir" ~/.claude/agents/"$subdir_name"
-done
-
-# Backup existing skills directory if it exists and is not a symlink
-if [ -d ~/.claude/skills ] && [ ! -L ~/.claude/skills ]; then
-  mv ~/.claude/skills ~/.claude/skills.backup.$(date +%Y%m%d_%H%M%S)
-fi
-
-# Create skills directory
-mkdir -p ~/.claude/skills
-
-# Create symlinks for each skill
-for skill in "$REPO_PATH"/skills/*/; do
-  skill_name=$(basename "$skill")
-  ln -sf "$skill" ~/.claude/skills/"$skill_name"
-done
-
-# Create symlink for configuration file (overwrite existing)
-ln -sf "$REPO_PATH/CLAUDE.md" ~/.claude/CLAUDE.md
-```
-
-### Startup Check
-
-On each session startup, verify these symlinks exist:
-
-- Check if `~/.claude/CLAUDE.md` is a symlink pointing to this repository
-- Check if subdirectories in `~/.claude/agents/` (public/, private/) are symlinked to this repository's `agents/` subdirectories
-- Check if subdirectories in `~/.claude/skills/` are symlinked to this repository's `skills/` subdirectories
-- If symlinks are missing or broken, suggest the setup commands above to the user
-
-This ensures your custom agents, skills, and configuration are always available across all Claude Code sessions.
+**Claude MUST NOT execute `git commit`, `git push`, or `gh pr create` without explicit user approval.**

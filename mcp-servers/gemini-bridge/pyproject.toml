@@ -1,0 +1,9 @@
+[project]
+name = "gemini-bridge"
+version = "0.1.0"
+description = "Minimal MCP server wrapping the Gemini CLI"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=2.0.0,<3.0.0",
+    "uvicorn>=0.30.0,<1.0.0",
+]

@@ -1,0 +1,58 @@
+# GitHub Copilot Usage Report
+**Generated:** {{ generated }}  |  **Period:** {{ date_start }} → {{ date_end }} ({{ days }} days)  |  **Plan:** Copilot Business
+
+---
+
+## Executive Summary
+
+| Metric | Value |
+| :--- | ---: |
+| Total Active User-Days | {{ summary.total_active | commafy }} |
+| Total Engaged User-Days | {{ summary.total_engaged | commafy }} |
+| Total Code Suggestions | {{ summary.total_sugg | commafy }} |
+| Total Code Acceptances | {{ summary.total_accept | commafy }} |
+| **Suggestion Acceptance Rate** | **{{ summary.accept_rate }}%** |
+| Total Lines Suggested | {{ summary.total_lines_sugg | commafy }} |
+| Total Lines Accepted | {{ summary.total_lines_accept | commafy }} |
+| **Line Acceptance Rate** | **{{ summary.line_accept_rate }}%** |
+| IDE Chat Engaged User-Days | {{ summary.ide_chat | commafy }} |
+| Dotcom Chat Engaged User-Days | {{ summary.dotcom_chat | commafy }} |
+| PR Suggestions Engaged User-Days | {{ summary.pr_days | commafy }} |
+
+---
+
+## Editor Breakdown (Cumulative Engaged User-Days)
+
+| Editor | Engaged User-Days |
+| :--- | ---: |
+{% for editor in editors -%}
+| {{ editor.name }} | {{ editor.count | commafy }} |
+{% endfor %}
+---
+
+## Top Languages by Suggestions
+
+| Language | Suggestions | Acceptances | Accept Rate | Lines Suggested | Lines Accepted | Line Accept Rate |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+{% for lang in top_langs -%}
+| {{ lang.name }} | {{ lang.sugg | commafy }} | {{ lang.accept | commafy }} | {{ lang.accept_rate }}% | {{ lang.lines_sugg | commafy }} | {{ lang.lines_accept | commafy }} | {{ lang.line_accept_rate }}% |
+{% endfor %}
+---
+
+## Weekly Trend
+
+| Week | Active Users | Engaged Users | Suggestions | Acceptances | Accept Rate |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+{% for week in weekly -%}
+| {{ week.label }} | {{ week.active | commafy }} | {{ week.engaged | commafy }} | {{ week.sugg | commafy }} | {{ week.accept | commafy }} | {{ week.accept_rate }}% |
+{% endfor %}
+---
+
+## Per-User Seat Activity
+
+| User | Seat Since | Last Authenticated | Last Active | Editor | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+{% for user in users -%}
+| {{ user.login }} | {{ user.seat_since }} | {{ user.last_auth }} | {{ user.last_active }} | {{ user.editor }} | {{ user.status }} |
+{% endfor %}
+> **Note:** GitHub Copilot Business does not expose per-user suggestion/acceptance counts via API — per-user data is limited to seat assignment and last activity timestamps.

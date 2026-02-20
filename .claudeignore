@@ -1,0 +1,12 @@
+# .claudeignore
+# Keep Claude focused and context window clean
+
+.git/
+.gitmodules
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+.DS_Store
+*.backup.*
