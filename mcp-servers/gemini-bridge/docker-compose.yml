@@ -1,0 +1,17 @@
+services:
+  gemini-bridge:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-}
+      - GEMINI_BRIDGE_DEBUG=${GEMINI_BRIDGE_DEBUG:-false}
+    volumes:
+      # Mount gemini CLI auth (oauth_creds, etc.) — must come BEFORE settings.json override
+      - ${HOME}/.gemini:/root/.gemini
+      # Override settings.json with our static config (enables experimental.plan)
+      - ./gemini-settings.json:/root/.gemini/settings.json:ro
+      # Mount workspace for code access — set WORKSPACE_MOUNT to your project directory
+      - ${WORKSPACE_MOUNT:?Set WORKSPACE_MOUNT to your project directory}:/workspace:ro
+    restart: unless-stopped

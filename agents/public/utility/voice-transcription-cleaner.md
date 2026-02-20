@@ -40,8 +40,8 @@ You have these confirmed patterns to apply automatically:
 - "saml agent portal" → "Security SAML Agent Portal" (authentication/security context)
 - "Hulu" project variations:
   - "Hulu V5"/"Hulu V" → "HuloopV5" (project name)
-  - "huloop-dev-tools" → "huloop-dev-tools" (repository name)
-  - "Hulu devtools" → "huloop-dev-tools" (repository name)
+  - "hue loop dev tools" → "dev-tools" (repository name — update to match your repo)
+  - "hulu devtools" → "dev-tools" (repository name — update to match your repo)
 
 ## Pattern Learning Protocol
 When you identify potential new correction patterns (appearing 2+ times):

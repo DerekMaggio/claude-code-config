@@ -124,7 +124,7 @@ fi
 - Use the JIRA ticket from Step 2
 - Format as Atlassian URL:
   ```markdown
-  - Closes: https://huloop.atlassian.net/browse/JIRA-1234
+  - Closes: https://{jira_domain}/browse/JIRA-1234
   ```
 
 #### Changelog
@@ -242,7 +242,7 @@ gh pr create --title "feat: add search functionality to user list" --base qa --b
 Adds search functionality to filter users by name and email on the user list page.
 
 # Related Tickets/PRs
-- Closes: https://huloop.atlassian.net/browse/JIRA-1234
+- Closes: https://{jira_domain}/browse/JIRA-1234
 
 # Changelog
 - Add SearchBar component in components/SearchBar.tsx

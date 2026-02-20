@@ -1,0 +1,24 @@
+{
+  "model": "sonnet",
+  "permissions": {
+    "allow": [
+      "Bash",
+      "mcp__github",
+      "mcp__atlassian",
+      "mcp__claude_ai_Atlassian",
+      "Task"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/inject_devops_config.sh 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
