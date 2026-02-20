@@ -76,8 +76,9 @@ async def gemini_query(
     approval_mode: ApprovalMode = ApprovalMode.YOLO,
     include_directory: Optional[str] = None,
     auto_fallback: bool = True,
-) -> str:
-    """Send a prompt to Gemini CLI and return the raw response.
+    include_stats: bool = False,
+) -> dict:
+    """Send a prompt to Gemini CLI and return the response.
 
     Args:
         prompt: The prompt to send to Gemini.
@@ -85,10 +86,9 @@ async def gemini_query(
         approval_mode: Controls tool approval. yolo=auto-approve all, auto_edit=auto-approve edits only, plan=read-only, default=prompt for approval.
         include_directory: Optional directory outside the workspace to include.
         auto_fallback: If True, automatically retry with cheaper models on quota exhaustion.
+        include_stats: If True, include token/latency stats in the response. Defaults to False.
     """
     log.debug("gemini_query called: model=%s, approval_mode=%s, auto_fallback=%s, prompt=%s", model, approval_mode, auto_fallback, prompt[:100])
-    suffix = " Return results as a raw JSON object. No conversational text."
-    full_prompt = prompt + suffix
 
     models_to_try = (
         FALLBACK_CHAIN[FALLBACK_CHAIN.index(model.value):]
@@ -101,11 +101,14 @@ async def gemini_query(
     last_error = ""
     for m in models_to_try:
         log.debug("Trying model: %s", m)
-        rc, stdout, stderr = await _run_gemini(full_prompt, m, approval_mode.value, include_directory)
+        rc, stdout, stderr = await _run_gemini(prompt, m, approval_mode.value, include_directory)
 
         if rc == 0 and stdout.strip():
             log.debug("Success with model %s", m)
-            return stdout.strip()
+            parsed = json.loads(stdout.strip())
+            if not include_stats:
+                parsed.pop("stats", None)
+            return parsed
 
         if rc == 53 or "exhausted your capacity" in stderr:
             last_error = f"Quota exhausted for {m}"
@@ -113,17 +116,17 @@ async def gemini_query(
             continue
 
         if rc != 0:
-            return json.dumps({
+            return {
                 "error": True,
                 "model": m,
                 "exit_code": rc,
                 "stderr": stderr.strip(),
-            })
+            }
 
-    return json.dumps({
+    return {
         "error": True,
         "message": f"All models exhausted. Last: {last_error}",
-    })
+    }
 
 
 if __name__ == "__main__":
