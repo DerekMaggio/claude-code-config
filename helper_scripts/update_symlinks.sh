@@ -89,6 +89,12 @@ else
   echo "⏭️  No .mcp.json found in repo, skipping"
 fi
 
+# Register user-scoped MCP servers (global across all projects)
+echo "🌐 Registering user-scoped MCP servers..."
+claude mcp remove gemini-bridge --scope user 2>/dev/null || true
+claude mcp add --scope user --transport http gemini-bridge http://localhost:8000/mcp
+echo "✅ Registered gemini-bridge (user scope)"
+
 # --- STATUSLINE ---
 echo "📊 Linking statusline-command.sh..."
 if [ -f "$REPO_PATH/statusline-command.sh" ]; then
