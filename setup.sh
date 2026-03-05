@@ -50,6 +50,7 @@ install_node() {
     if check_installed node; then return; fi
     echo "[INSTALL] Node.js via nvm"
 
+    set +eu
     if ! command -v nvm &>/dev/null; then
         echo "  Installing nvm..."
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
@@ -60,6 +61,7 @@ install_node() {
 
     nvm install --lts
     nvm use --lts
+    set -eu
     echo "[OK] node installed: $(node --version 2>&1)"
 }
 
@@ -148,11 +150,8 @@ install_gtr() {
     if check_installed git-gtr; then return; fi
     echo "[INSTALL] git-worktree-runner (git-gtr)"
 
-    local tmp
-    tmp=$(mktemp -d)
-    git clone --quiet https://github.com/coderabbitai/git-worktree-runner.git "$tmp"
-    sudo install -m 755 "$tmp/bin/git-gtr" "$INSTALL_DIR/git-gtr"
-    rm -rf "$tmp"
+    git clone https://github.com/coderabbitai/git-worktree-runner.git "$INSTALL_DIR/git-worktree-runner"
+    (cd "$INSTALL_DIR/git-worktree-runner" && sudo ./install.sh)
     echo "[OK] git-gtr installed"
 }
 
@@ -184,6 +183,10 @@ if [[ "$SKIP_OPTIONAL" == false ]]; then
         fi
     fi
 fi
+
+echo ""
+echo "=== Claude Code symlinks ==="
+bash "$(dirname "${BASH_SOURCE[0]}")/helper_scripts/update_symlinks.sh"
 
 echo ""
 echo "=== Setup complete ==="
