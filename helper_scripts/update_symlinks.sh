@@ -141,7 +141,10 @@ if [ -d "$REPO_PATH/hooks" ]; then
     mv "$target" "$backup_path"
   fi
 
-  ln -sf "$REPO_PATH/hooks" "$target"
+  # Remove existing symlink before recreating to avoid creating hooks/hooks
+  [ -L "$target" ] && rm "$target"
+
+  ln -s "$REPO_PATH/hooks" "$target"
   echo "🔗 Linked hooks/"
 else
   echo "⏭️  No hooks/ directory found in repo, skipping"
