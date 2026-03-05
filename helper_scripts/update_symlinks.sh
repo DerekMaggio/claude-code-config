@@ -95,6 +95,10 @@ claude mcp remove gemini-bridge --scope user 2>/dev/null || true
 claude mcp add --scope user --transport http gemini-bridge http://localhost:8000/mcp
 echo "✅ Registered gemini-bridge (user scope)"
 
+claude mcp remove pr-index --scope user 2>/dev/null || true
+claude mcp add --scope user --transport http pr-index http://localhost:8001/mcp
+echo "✅ Registered pr-index (user scope)"
+
 # --- STATUSLINE ---
 echo "📊 Linking statusline-command.sh..."
 if [ -f "$REPO_PATH/statusline-command.sh" ]; then
@@ -125,6 +129,26 @@ fi
 # --- INJECT SCRIPT ---
 echo "💉 Linking inject_devops_config.sh..."
 ln -sf "$REPO_PATH/helper_scripts/inject_devops_config.sh" "$CLAUDE_CONFIG_DIR/inject_devops_config.sh"
+
+# --- HOOKS ---
+echo "🪝 Linking hooks/..."
+if [ -d "$REPO_PATH/hooks" ]; then
+  target="$CLAUDE_CONFIG_DIR/hooks"
+
+  if [ -d "$target" ] && [ ! -L "$target" ]; then
+    backup_path="${target}.backup.$(date +%Y%m%d_%H%M%S)"
+    echo "⚠️  Backing up existing directory $target to $backup_path"
+    mv "$target" "$backup_path"
+  fi
+
+  # Remove existing symlink before recreating to avoid creating hooks/hooks
+  [ -L "$target" ] && rm "$target"
+
+  ln -s "$REPO_PATH/hooks" "$target"
+  echo "🔗 Linked hooks/"
+else
+  echo "⏭️  No hooks/ directory found in repo, skipping"
+fi
 
 echo "✅ Symlinks updated successfully!"
 echo "Note: If you added new private agents, ensure submodules are initialized: git submodule update --init"
