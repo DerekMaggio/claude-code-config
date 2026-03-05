@@ -1,0 +1,5 @@
+{
+  "doc_file": "README.md",
+  "bypass_token": "[docs-ok]",
+  "safe_pattern": "^(README\\.md|CLAUDE\\.md|\\.claude/|\\.gitignore|.*\\.lock$)"
+}
