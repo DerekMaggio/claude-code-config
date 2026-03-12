@@ -1,5 +1,4 @@
 {
-  "model": "sonnet",
   "permissions": {
     "allow": [
       "Bash",
@@ -9,11 +8,7 @@
       "Task"
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline-command.sh",
-    "padding": 2
-  },
+  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -22,6 +17,21 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/pre-commit-docs-check.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-commit-lint.sh\"; [ -f \"$f\" ] && bash \"$f\" || exit 0'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/post-md-frontmatter.sh"
           }
         ]
       }
@@ -37,5 +47,10 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline-command.sh",
+    "padding": 2
   }
 }

@@ -41,10 +41,8 @@ block_combined_add_commit() {
     local cmd_stripped
     cmd_stripped=$(echo "$1" | sed 's/-m.*//')
     if echo "$cmd_stripped" | grep -qE 'git\s+add.*&&.*git\s+commit'; then
-        echo "HOOK ERROR: Do not combine 'git add' and 'git commit' in one command." >&2
-        echo "Run 'git add' first, then 'git commit' separately so this hook can" >&2
-        echo "inspect the correct staged file list." >&2
-        return 2
+        printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Do not combine git add and git commit in one command. Run git add first, then git commit separately so the docs check hook can inspect the staged file list."}}'
+        exit 2
     fi
 }
 
@@ -56,10 +54,12 @@ read_config() {
         DOC_FILE=$(jq -r '.doc_file // ""' "$config_file")
         BYPASS_TOKEN=$(jq -r '.bypass_token // "[docs-ok]"' "$config_file")
         SAFE_PATTERN=$(jq -r '.safe_pattern // ""' "$config_file")
+        CUSTOM_INSTRUCTIONS=$(jq -r '.custom_instructions // ""' "$config_file")
     else
         DOC_FILE=$(python3 -c "import json; d=json.load(open('$config_file')); print(d.get('doc_file',''))" 2>/dev/null || echo "")
         BYPASS_TOKEN=$(python3 -c "import json; d=json.load(open('$config_file')); print(d.get('bypass_token','[docs-ok]'))" 2>/dev/null || echo "[docs-ok]")
         SAFE_PATTERN=$(python3 -c "import json; d=json.load(open('$config_file')); print(d.get('safe_pattern',''))" 2>/dev/null || echo "")
+        CUSTOM_INSTRUCTIONS=$(python3 -c "import json; d=json.load(open('$config_file')); print(d.get('custom_instructions',''))" 2>/dev/null || echo "")
     fi
 }
 
@@ -112,7 +112,7 @@ prompt_create_config() {
 # ── Freshness check ───────────────────────────────────────────────────────────
 
 run_docs_check() {
-    local doc_file="$1" bypass_token="$2" safe_pattern="$3" command="$4"
+    local doc_file="$1" bypass_token="$2" safe_pattern="$3" command="$4" custom_instructions="$5"
 
     local staged
     staged=$(git diff --cached --name-only 2>/dev/null || echo "")
@@ -130,15 +130,16 @@ run_docs_check() {
     echo "$staged" | grep -qF "$doc_file" && return 0
     echo "$command" | grep -qF "$bypass_token" && return 0
 
-    echo "DOCS CHECK" >&2
-    echo "" >&2
-    echo "Staged files:" >&2
-    echo "$staged" | sed 's/^/  /' >&2
-    echo "" >&2
-    echo "Review $doc_file before committing." >&2
-    echo "Option A: Update the doc, stage it, then retry." >&2
-    echo "Option B: If no update is needed, add $bypass_token to your commit message." >&2
-    return 2
+    local reason
+    if [ -n "$custom_instructions" ]; then
+        reason="$custom_instructions Option B: If no update is needed, add $bypass_token to your commit message."
+    else
+        reason="Review $doc_file before committing. Option A: Update the doc, stage it, then retry. Option B: If no update is needed, add $bypass_token to your commit message."
+    fi
+
+    printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' \
+        "$(echo "$reason" | sed 's/"/\\"/g')"
+    exit 2
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -161,11 +162,11 @@ main() {
         exit 2
     fi
 
-    local DOC_FILE BYPASS_TOKEN SAFE_PATTERN
+    local DOC_FILE BYPASS_TOKEN SAFE_PATTERN CUSTOM_INSTRUCTIONS
     read_config "$config_file"
     [ -z "$DOC_FILE" ] && exit 0
 
-    run_docs_check "$DOC_FILE" "$BYPASS_TOKEN" "$SAFE_PATTERN" "$command"
+    run_docs_check "$DOC_FILE" "$BYPASS_TOKEN" "$SAFE_PATTERN" "$command" "$CUSTOM_INSTRUCTIONS"
     exit $?
 }
 

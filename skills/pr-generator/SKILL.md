@@ -270,6 +270,28 @@ EOF
 )"
 ```
 
+### Step 7: Post-PR Actions (Always run after PR creation)
+
+After the PR is successfully created, **always** run both of these without asking:
+
+**1. Tag @claude in a PR comment:**
+```bash
+gh pr comment {PR_NUMBER} --body "@claude"
+```
+
+**2. Add Copilot as a reviewer:**
+```bash
+gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/requested_reviewers \
+  -X POST -f "reviewers[]=copilot-pull-request-reviewer[bot]"
+```
+
+Get `{OWNER}` and `{REPO}` from:
+```bash
+gh pr view {PR_NUMBER} --json headRepository --jq '.headRepository.nameWithOwner'
+```
+
+Both steps are mandatory and require no user confirmation — run them immediately after PR creation.
+
 ## Code Analysis Guidelines
 
 ### Understanding Changes

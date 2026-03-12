@@ -28,29 +28,40 @@ After the user confirms the engagement mode, Claude MUST complete the appropriat
 #### Mode A — Scoped Work (Implementation)
 **Purpose:** Implement a defined change with verifiable outcomes.
 
+**Repository Routing (Detect Before Any Ticket Work):**
+Run `git remote get-url origin` to determine the org/account:
+- URL contains `AgreeYa-HuLoop` → use **devops-task-retriever** / **devops-task-creator** (Jira DEVOPS project)
+- URL contains `DerekMaggio` → use **github-task-retriever** / **github-task-creator** (GitHub Issues)
+- Unknown / no remote → ask the user which workflow to use before proceeding
+
 **Requirement: Ticket Discovery & Content Approval**
-1. **Case 1: Existing Ticket ID Provided**
-   - Claude MUST invoke the **devops-task-retriever** skill to fetch Summary, Description, Acceptance Criteria (`customfield_10037`), and Customer (`customfield_10962`).
-   - Claude MUST present these details and ask: 
-     > "I've retrieved Ticket [ID]. I will use the Acceptance Criteria as my Definition of Done (DoD). Do you confirm this is the correct scope?"
+1. **Case 1: Existing Ticket / Issue ID Provided**
+   - **AgreeYa-HuLoop repos:** Invoke **devops-task-retriever** to fetch Summary, Description, Acceptance Criteria (`customfield_10037`), and Customer (`customfield_10962`).
+   - **DerekMaggio repos:** Invoke **github-task-retriever** to fetch Title, Body, Labels, and checklist items as Acceptance Criteria.
+   - Claude MUST present these details and ask:
+     > "I've retrieved [Ticket/Issue ID]. I will use the Acceptance Criteria as my Definition of Done (DoD). Do you confirm this is the correct scope?"
    - **GATE:** If the Acceptance Criteria is too vague for DoD, Claude MUST use `AskUser` to refine them into verifiable facts.
 
-2. **Case 2: No Ticket ID (New Work)**
-   - **Discovery Interview:** Claude MUST use the `AskUser` task to interview the user for: **Summary, Description, HuLoop Customer,** and **Definition of Done (DoD)** as verifiable facts.
+2. **Case 2: No Ticket / Issue ID (New Work)**
+   - **Discovery Interview:** Claude MUST use the `AskUser` task to interview the user for the required fields:
+     - **AgreeYa-HuLoop:** Summary, Description, HuLoop Customer, and Definition of Done (DoD)
+     - **DerekMaggio:** Title, Description, Labels (optional), and Definition of Done (DoD)
    - **Content Review:** Claude MUST present the gathered information:
-     > **Proposed Ticket Details:**
-     > - **Summary:** [Text]
+     > **Proposed Issue Details:**
+     > - **Title/Summary:** [Text]
      > - **Description:** [Text]
-     > - **Customer:** [Text]
+     > - **Customer / Labels:** [Text]
      > - **Acceptance Criteria (DoD):** [Numbered List]
-     > 
-     > "Does this look correct? Once confirmed, I will create the ticket and obtain an ID."
-   - **Ticket Creation & ID Retrieval:** After confirmation, Claude MUST invoke the **devops-task-creator** skill.
-   - **HARD GATE:** Claude MUST NOT proceed to the Final Approval Gate until the Ticket ID has been successfully generated and presented to the user.
+     >
+     > "Does this look correct? Once confirmed, I will create the ticket/issue and obtain an ID."
+   - **Issue Creation & ID Retrieval:**
+     - **AgreeYa-HuLoop repos:** Invoke **devops-task-creator**
+     - **DerekMaggio repos:** Invoke **github-task-creator**
+   - **HARD GATE:** Claude MUST NOT proceed to the Final Approval Gate until the Ticket/Issue ID has been successfully generated and presented to the user.
 
 3. **Final Approval Gate (The Work Gate)**
-   - Once a Ticket ID and specific DoD/Acceptance Criteria are established, Claude MUST ask:
-     > "Scope is locked with Ticket [ID]. Should I begin implementation?"
+   - Once a Ticket/Issue ID and specific DoD/Acceptance Criteria are established, Claude MUST ask:
+     > "Scope is locked with [Ticket/Issue ID]. Should I begin implementation?"
    - **HARD GATE:** Claude MUST NOT execute any commands, write code, read files, or create branches until the user provides explicit approval to start.
 
 #### Mode B — Exploratory / Debug (RCA)

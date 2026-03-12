@@ -3,6 +3,10 @@
     "gemini-bridge": {
       "type": "http",
       "url": "http://localhost:8000/mcp"
+    },
+    "pr-index": {
+      "type": "http",
+      "url": "http://localhost:8001/mcp"
     }
   }
 }
