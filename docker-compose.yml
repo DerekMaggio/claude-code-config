@@ -1,0 +1,17 @@
+# Top-level Compose file for all MCP servers.
+#
+# Uses Compose `include` to delegate each server's definition to its own repo,
+# keeping this file as a thin orchestration layer.
+#
+# Prerequisites:
+#   PR_INDEX_REPO_PATH — path to the pr-index repo checkout
+#                        e.g. export PR_INDEX_REPO_PATH=~/Documents/pr-index
+#
+# Usage:
+#   docker compose up -d               # start all servers
+#   docker compose up -d pr-index      # start one server
+#   docker compose logs -f             # tail all logs
+
+include:
+  - mcp-servers/gemini-bridge/docker-compose.yml
+  - path: ${PR_INDEX_REPO_PATH:?Set PR_INDEX_REPO_PATH to the pr-index repo path}/docker-compose.yml
