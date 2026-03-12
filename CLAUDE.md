@@ -87,3 +87,13 @@ Claude MUST complete these steps before proposing a PR:
 3. **Explicit Approval:** Get approval before running `gh pr create`.
 
 **Claude MUST NOT execute `git commit`, `git push`, or `gh pr create` without explicit user approval.**
+
+---
+
+### 5. Gemini Bridge MCP — File Access Rules
+The Gemini bridge runs in a Docker container with a single read-only bind mount: `~/workspace` → `/workspace`.
+
+- Gemini **CANNOT** access `/tmp`, `/home`, or any path outside `~/workspace`.
+- When passing files to Gemini: place them inside the workspace first, then reference them by their **container-internal path** (e.g., `/workspace/huloop-dev-tools/foo.diff`).
+- **Never** use host-absolute paths like `/home/derek-maggio/workspace/...` — Gemini sees `/workspace/...`.
+- The `include_directory` parameter can mount one additional host directory into the container for a single query.
