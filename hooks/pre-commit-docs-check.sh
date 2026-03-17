@@ -146,7 +146,7 @@ run_docs_check() {
             || printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' \
                 "$(echo "$reason" | sed 's/"/\\"/g')"
     fi
-    exit 2
+    return 2
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────

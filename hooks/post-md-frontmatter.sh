@@ -35,7 +35,15 @@ main() {
     if head -1 "$file_path" | grep -q "^---$"; then
         # Has frontmatter — ensure the `updated` field exists and is current
         if grep -q "^updated:" "$file_path"; then
-            sed -i "s/^updated: .*/updated: $today/" "$file_path"
+            # Update only within frontmatter block (between first two --- lines)
+            local tmp_upd
+            tmp_upd=$(mktemp)
+            awk -v today="$today" '
+                NR == 1 && $0 == "---" { in_fm = 1; print; next }
+                in_fm && $0 ~ /^updated:[[:space:]]/ { print "updated: " today; next }
+                in_fm && $0 == "---" { in_fm = 0; print; next }
+                { print }
+            ' "$file_path" > "$tmp_upd" && mv "$tmp_upd" "$file_path"
         else
             # Insert `updated:` before the closing `---`
             local tmp_fm

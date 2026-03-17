@@ -152,9 +152,9 @@ install_gtr() {
 
     local tmp_dir
     tmp_dir="$(mktemp -d)"
+    trap 'rm -rf "$tmp_dir"' RETURN
     git clone https://github.com/coderabbitai/git-worktree-runner.git "$tmp_dir/git-worktree-runner"
     (cd "$tmp_dir/git-worktree-runner" && sudo ./install.sh)
-    rm -rf "$tmp_dir"
     echo "[OK] git-gtr installed"
 }
 
