@@ -280,14 +280,18 @@ gh pr comment {PR_NUMBER} --body "@claude"
 ```
 
 **2. Add Copilot as a reviewer:**
-```bash
-gh api repos/{OWNER}/{REPO}/pulls/{PR_NUMBER}/requested_reviewers \
-  -X POST -f "reviewers[]=copilot-pull-request-reviewer[bot]"
-```
 
-Get `{OWNER}` and `{REPO}` from:
+Capture the PR number and owner/repo from the `gh pr create` output or by querying:
 ```bash
-gh pr view {PR_NUMBER} --json headRepository --jq '.headRepository.nameWithOwner'
+# Get PR number for the current branch
+PR_NUMBER=$(gh pr view --json number --jq '.number')
+
+# Get owner and repo separately
+OWNER=$(gh repo view --json owner --jq '.owner.login')
+REPO=$(gh repo view --json name --jq '.name')
+
+gh api "repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}/requested_reviewers" \
+  -X POST -f "reviewers[]=copilot-pull-request-reviewer[bot]"
 ```
 
 Both steps are mandatory and require no user confirmation — run them immediately after PR creation.

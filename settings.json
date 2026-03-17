@@ -8,7 +8,6 @@
       "Task"
     ]
   },
-  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -20,7 +19,7 @@
           },
           {
             "type": "command",
-            "command": "bash -c 'f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-commit-lint.sh\"; [ -f \"$f\" ] && bash \"$f\" || exit 0'"
+            "command": "bash -c 'f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-commit-lint.sh\"; if [ -f \"$f\" ]; then bash \"$f\"; else exit 0; fi'"
           }
         ]
       }
@@ -52,5 +51,6 @@
     "type": "command",
     "command": "~/.claude/statusline-command.sh",
     "padding": 2
-  }
+  },
+  "effortLevel": "medium"
 }

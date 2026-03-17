@@ -1,12 +1,13 @@
 # Hooks
 
-Claude Code `PreToolUse` hooks. Registered globally in `settings.json` and symlinked to `~/.claude/hooks/`.
+Claude Code tool hooks (`PreToolUse` and `PostToolUse`). Registered globally in `settings.json` and symlinked to `~/.claude/hooks/`.
 
 ## Available Hooks
 
 | Hook | Trigger | Description |
 |---|---|---|
 | `pre-commit-docs-check.sh` | `PreToolUse: Bash` (git commit) | Enforces documentation review before every commit |
+| `post-md-frontmatter.sh` | `PostToolUse: Write\|Edit` (.md files) | Updates or inserts frontmatter `updated` date on markdown writes |
 
 ## pre-commit-docs-check
 

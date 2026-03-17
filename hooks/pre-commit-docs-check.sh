@@ -16,6 +16,7 @@
 # }
 #
 # Test:
+#   export CLAUDE_PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 #   echo '{"tool_name":"Bash","tool_input":{"command":"git commit -m test"}}' | bash hooks/pre-commit-docs-check.sh
 
 # ── Input parsing ─────────────────────────────────────────────────────────────
@@ -42,7 +43,7 @@ block_combined_add_commit() {
     cmd_stripped=$(echo "$1" | sed 's/-m.*//')
     if echo "$cmd_stripped" | grep -qE 'git\s+add.*&&.*git\s+commit'; then
         printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Do not combine git add and git commit in one command. Run git add first, then git commit separately so the docs check hook can inspect the staged file list."}}'
-        exit 2
+        return 2
     fi
 }
 
@@ -127,7 +128,7 @@ run_docs_check() {
     fi
 
     [ -z "$non_safe" ] && return 0
-    echo "$staged" | grep -qF "$doc_file" && return 0
+    echo "$staged" | grep -qxF "$doc_file" && return 0
     echo "$command" | grep -qF "$bypass_token" && return 0
 
     local reason
@@ -137,8 +138,14 @@ run_docs_check() {
         reason="Review $doc_file before committing. Option A: Update the doc, stage it, then retry. Option B: If no update is needed, add $bypass_token to your commit message."
     fi
 
-    printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' \
-        "$(echo "$reason" | sed 's/"/\\"/g')"
+    if command -v jq &>/dev/null; then
+        jq -Rn --arg reason "$reason" \
+            '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":$reason}}'
+    else
+        python3 -c "import json,sys; print(json.dumps({'hookSpecificOutput':{'hookEventName':'PreToolUse','permissionDecision':'deny','permissionDecisionReason':sys.argv[1]}}))" "$reason" 2>/dev/null \
+            || printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' \
+                "$(echo "$reason" | sed 's/"/\\"/g')"
+    fi
     exit 2
 }
 
@@ -159,6 +166,9 @@ main() {
 
     if [ ! -f "$config_file" ]; then
         prompt_create_config "$CLAUDE_PROJECT_DIR"
+        cat <<'DENIAL'
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Missing .claude/docs-check.json configuration. Candidate documentation files have been listed above. Please create .claude/docs-check.json to enable the documentation freshness check."}}
+DENIAL
         exit 2
     fi
 

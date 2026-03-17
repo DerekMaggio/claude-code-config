@@ -50,18 +50,18 @@ install_node() {
     if check_installed node; then return; fi
     echo "[INSTALL] Node.js via nvm"
 
-    set +eu
+    set +u
     if ! command -v nvm &>/dev/null; then
         echo "  Installing nvm..."
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash || { echo "nvm install failed"; exit 1; }
         export NVM_DIR="$HOME/.nvm"
         # shellcheck source=/dev/null
         [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
     fi
 
-    nvm install --lts
-    nvm use --lts
-    set -eu
+    nvm install --lts || { echo "nvm install --lts failed"; exit 1; }
+    nvm use --lts || { echo "nvm use --lts failed"; exit 1; }
+    set -u
     echo "[OK] node installed: $(node --version 2>&1)"
 }
 
@@ -150,8 +150,11 @@ install_gtr() {
     if check_installed git-gtr; then return; fi
     echo "[INSTALL] git-worktree-runner (git-gtr)"
 
-    git clone https://github.com/coderabbitai/git-worktree-runner.git "$INSTALL_DIR/git-worktree-runner"
-    (cd "$INSTALL_DIR/git-worktree-runner" && sudo ./install.sh)
+    local tmp_dir
+    tmp_dir="$(mktemp -d)"
+    git clone https://github.com/coderabbitai/git-worktree-runner.git "$tmp_dir/git-worktree-runner"
+    (cd "$tmp_dir/git-worktree-runner" && sudo ./install.sh)
+    rm -rf "$tmp_dir"
     echo "[OK] git-gtr installed"
 }
 

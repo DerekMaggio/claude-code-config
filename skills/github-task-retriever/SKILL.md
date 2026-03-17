@@ -1,7 +1,7 @@
 ---
 name: github-task-retriever
 description: Retrieves and parses a GitHub Issue by owner/repo#number or URL, extracting title, body, labels, and checklist items as a human-readable Definition of Done for personal DerekMaggio repos.
-allowed-tools: [mcp__github__get_issue, AskUserQuestion]
+allowed-tools: [Bash, mcp__github__get_issue, AskUserQuestion]
 ---
 
 # GitHub Issue Retriever
@@ -36,7 +36,7 @@ Extract from the response:
 - **Title**: `title`
 - **Body**: `body` (raw markdown)
 - **Labels**: `labels[].name` joined as a comma-separated list
-- **Acceptance Criteria (DoD)**: Scan `body` for markdown checklist items (`- [ ]` or `- [x]`). If found, extract them as the DoD list. If none found, use the full body text.
+- **Acceptance Criteria (DoD)**: Scan `body` for markdown checklist items (`- [ ]` or `- [x]`). If found, extract them as the DoD list. If none found, flag this and initiate a DoD interview via `AskUserQuestion`.
 
 ### Step 4: Verification Presentation
 Present the data to the user:
@@ -48,7 +48,7 @@ Present the data to the user:
 > I will use these Acceptance Criteria as the **Definition of Done (DoD)**. Does this match your expectations, or do we need to refine the verifiable facts?"
 
 ## 4. Technical Constraints
-- **Null Handling**: If the body is empty or has no checklist, flag this and initiate a DoD interview via `AskUserQuestion`.
+- **Null Handling**: If the body is empty or has no checklist items, flag this and initiate a DoD interview via `AskUserQuestion`.
 - **Naming**: Never abbreviate "Acceptance Criteria" to "AC".
 - **Org Scope**: This skill is for **DerekMaggio** repos only. For AgreeYa-HuLoop repos, use `devops-task-retriever`.
 

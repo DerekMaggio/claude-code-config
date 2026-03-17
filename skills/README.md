@@ -12,6 +12,8 @@ Each skill has a `SKILL.md` (the execution definition Claude reads) and lives in
 | `copilot-usage-report` | Pull GitHub Copilot usage metrics and seat activity, compile into Obsidian markdown report |
 | `devops-task-creator` | Create Jira tasks in the DEVOPS project with ADF-formatted Acceptance Criteria |
 | `devops-task-retriever` | Fetch and parse a DEVOPS Jira issue, extract AC and Customer fields for DoD review |
+| `github-task-creator` | Create GitHub Issues in DerekMaggio repos with structured title, body, and labels |
+| `github-task-retriever` | Retrieve and parse GitHub Issues from DerekMaggio repos, extracting checklist items as DoD |
 | `gha-analyze` | Root cause analysis on a failed GitHub Actions run — fetches logs, identifies failure, suggests fixes |
 | `gha-run` | Trigger and monitor a GHA workflow; chains to `gha-analyze` on failure |
 | `monthly-customer-scheduling` | Pull Salesforce maintenance windows, map to Jira, create monthly Epic with deployment tickets |

@@ -1,5 +1,7 @@
 # Top-level Compose file for all MCP servers.
 #
+# Requires Docker Compose v2.20+ (for the `include` directive).
+#
 # Uses Compose `include` to delegate each server's definition to its own repo,
 # keeping this file as a thin orchestration layer.
 #

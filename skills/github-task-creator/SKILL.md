@@ -1,7 +1,7 @@
 ---
 name: github-task-creator
 description: Creates GitHub Issues in DerekMaggio repositories with structured title, body (markdown), and labels. Returns the issue URL and number for use as a Mode A scoped work reference.
-allowed-tools: [mcp__github__create_issue, AskUserQuestion]
+allowed-tools: [Bash, mcp__github__create_issue, AskUserQuestion]
 ---
 
 # GitHub Issue Creator

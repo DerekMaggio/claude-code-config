@@ -33,8 +33,19 @@ main() {
     today=$(date +%Y-%m-%d)
 
     if head -1 "$file_path" | grep -q "^---$"; then
-        # Has frontmatter — update the `updated` field silently
-        sed -i "s/^updated: .*/updated: $today/" "$file_path"
+        # Has frontmatter — ensure the `updated` field exists and is current
+        if grep -q "^updated:" "$file_path"; then
+            sed -i "s/^updated: .*/updated: $today/" "$file_path"
+        else
+            # Insert `updated:` before the closing `---`
+            local tmp_fm
+            tmp_fm=$(mktemp)
+            awk -v today="$today" '
+                NR == 1 && $0 == "---" { in_fm = 1; print; next }
+                in_fm && $0 == "---" { print "updated: " today; in_fm = 0; print; next }
+                { print }
+            ' "$file_path" > "$tmp_fm" && mv "$tmp_fm" "$file_path"
+        fi
     else
         # No frontmatter — prepend a blank template
         local tmp

@@ -40,10 +40,10 @@ Run `git remote get-url origin` to determine the org/account:
    - **DerekMaggio repos:** Invoke **github-task-retriever** to fetch Title, Body, Labels, and checklist items as Acceptance Criteria.
    - Claude MUST present these details and ask:
      > "I've retrieved [Ticket/Issue ID]. I will use the Acceptance Criteria as my Definition of Done (DoD). Do you confirm this is the correct scope?"
-   - **GATE:** If the Acceptance Criteria is too vague for DoD, Claude MUST use `AskUser` to refine them into verifiable facts.
+   - **GATE:** If the Acceptance Criteria is too vague for DoD, Claude MUST use `AskUserQuestion` to refine them into verifiable facts.
 
 2. **Case 2: No Ticket / Issue ID (New Work)**
-   - **Discovery Interview:** Claude MUST use the `AskUser` task to interview the user for the required fields:
+   - **Discovery Interview:** Claude MUST use `AskUserQuestion` to interview the user for the required fields:
      - **AgreeYa-HuLoop:** Summary, Description, HuLoop Customer, and Definition of Done (DoD)
      - **DerekMaggio:** Title, Description, Labels (optional), and Definition of Done (DoD)
    - **Content Review:** Claude MUST present the gathered information:
