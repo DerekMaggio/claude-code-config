@@ -21,4 +21,5 @@ Each skill has a `SKILL.md` (the execution definition Claude reads) and lives in
 | `pr-generator` | Analyze branch diff and generate a full PR description; waits for approval before creating |
 | `request-triage` | Transform raw DevOps requests into structured MVRs with vault-based routing |
 | `sonarqube-fixer` | Parse SonarQube JSON, categorize issues, fix with safety checks and commit strategy |
+| `sonarqube-report-summarizer` | Generate weekly SonarQube summary reports from downloaded JSON exports into Obsidian markdown |
 | `task-definition` | Decompose an approved Parent MVR into verifiable Child MVTs via the task-architect agent |

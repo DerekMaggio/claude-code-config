@@ -33,6 +33,15 @@
             "command": "bash ~/.claude/hooks/post-md-frontmatter.sh"
           }
         ]
+      },
+      {
+        "matcher": "mcp__atlassian__searchJiraIssuesUsingJql",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run ~/.claude/hooks/filter-jira-search.py"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

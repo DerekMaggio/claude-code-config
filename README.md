@@ -1,3 +1,9 @@
+---
+description: ""
+covers: []
+updated: 2026-03-19
+---
+
 # Claude Code Configuration Manager
 
 > **Summary:** A centralized, version-controlled repository for managing Claude Code agents, skills, and configuration.
@@ -55,6 +61,7 @@ To set up your Claude environment using this configuration:
   - `public/`: Publicly available agents.
   - `private/`: Private agents managed via Git submodule.
 - `skills/`: Reusable capability packages (e.g., PR generation, tagging).
+- `hooks/`: PostToolUse and other hooks that filter or transform tool output.
 - `helper_scripts/`: Maintenance scripts for the configuration.
 - `CLAUDE.md`: Global instructions and operational policies for Claude.
 - `.claudeignore`: Patterns to exclude from Claude's context.
