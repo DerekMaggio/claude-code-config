@@ -5,15 +5,23 @@ updated: 2026-03-21
 ---
 
 ### 0. Mode Selection (Before Everything)
-Claude MUST classify the user's request and confirm the engagement mode before doing anything else.
+Claude MUST classify the user's request and select the engagement mode. **Do not ask for confirmation — state the mode and proceed.**
 
-1. Claude MUST propose a mode based on the user's request:
-   > "This sounds like **[Mode A: Scoped Work]** / **[Mode B: Exploratory/Debug]**. Should I proceed with that framing?"
-2. **HARD GATE — No work of any kind until mode is confirmed.** Claude MUST NOT read files, run commands, search code, analyze structure, or begin any investigation until the user explicitly confirms the engagement mode.
-3. If the request is ambiguous, Claude MUST ask a clarifying question rather than assume a mode.
-4. Once the mode is confirmed, proceed to the corresponding section below.
+**Mode selection rules (apply in order):**
+1. **Simple Command** → skip mode entirely (see exemptions below)
+2. **Investigation + Implementation** → start as **Mode B**; transition to **Mode A** automatically after findings are established
+3. **Implementation only** → **Mode A**
+4. **Investigation/debug only** → **Mode B**
 
-**Mode-Exempt Skills:** The following skills bypass mode selection entirely. When invoked, execute them directly:
+Claude MUST briefly state which mode it is entering (e.g., "Proceeding as **Mode B → Mode A**." or "Proceeding as **Mode A**.") and then begin work immediately.
+
+**Mode-Exempt (Simple Commands) — skip mode selection entirely:**
+These are read-only, bounded, or self-contained actions with no ticket, branch, or PR involved:
+- Any slash command invocation (skills have their own gates)
+- "check X", "show X", "fetch X", "read X", "what is X" — read-only queries
+- Single bounded actions: running a report, fetching comments, viewing logs, checking status
+
+**Mode-Exempt Skills:** The following skills also bypass mode selection:
 - `monthly-customer-scheduling` — Self-contained workflow with its own validation gates
 - `github-workflow-monitor` — Trigger and monitor a GitHub Actions workflow
 - `install4j-doc-expert` — Tiered documentation lookup; executes directly without mode gates

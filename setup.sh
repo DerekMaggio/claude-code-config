@@ -59,8 +59,8 @@ install_node() {
         [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
     fi
 
-    nvm install --lts || { echo "nvm install --lts failed"; exit 1; }
-    nvm use --lts || { echo "nvm use --lts failed"; exit 1; }
+    nvm install --lts > /dev/null || { echo "nvm install --lts failed"; exit 1; }
+    nvm use --lts > /dev/null || { echo "nvm use --lts failed"; exit 1; }
     set -u
     echo "[OK] node installed: $(node --version 2>&1)"
 }
@@ -133,7 +133,7 @@ install_yq() {
 install_claude_code() {
     if check_installed claude; then return; fi
     echo "[INSTALL] Claude Code"
-    npm install --global @anthropic-ai/claude-code
+    npm install --global @anthropic-ai/claude-code > /dev/null
     echo "[OK] claude installed: $(claude --version 2>&1 | head -1)"
 }
 
@@ -141,7 +141,7 @@ install_claude_code() {
 install_gemini() {
     if check_installed gemini; then return; fi
     echo "[INSTALL] Gemini CLI"
-    npm install --global @google/gemini-cli
+    npm install --global @google/gemini-cli > /dev/null
     echo "[OK] gemini installed: $(gemini --version 2>&1 | head -1)"
 }
 
@@ -153,8 +153,8 @@ install_gtr() {
     local tmp_dir
     tmp_dir="$(mktemp -d)"
     trap 'rm -rf "$tmp_dir"' RETURN
-    git clone https://github.com/coderabbitai/git-worktree-runner.git "$tmp_dir/git-worktree-runner"
-    (cd "$tmp_dir/git-worktree-runner" && sudo ./install.sh)
+    git clone --quiet https://github.com/coderabbitai/git-worktree-runner.git "$tmp_dir/git-worktree-runner" > /dev/null
+    (cd "$tmp_dir/git-worktree-runner" && sudo ./install.sh > /dev/null)
     echo "[OK] git-gtr installed"
 }
 
@@ -178,7 +178,7 @@ if [[ "$SKIP_OPTIONAL" == false ]]; then
             :
         else
             echo "[INSTALL] Salesforce CLI (sf)"
-            npm install --global @salesforce/cli
+            npm install --global @salesforce/cli > /dev/null
             echo "[OK] sf installed: $(sf --version 2>&1 | head -1)"
             echo ""
             echo "  NOTE: You still need to authenticate:"

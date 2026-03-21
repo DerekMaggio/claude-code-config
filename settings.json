@@ -56,5 +56,6 @@
     "command": "~/.claude/statusline-command.sh",
     "padding": 2
   },
-  "effortLevel": "medium"
+  "effortLevel": "medium",
+  "model": "sonnet"
 }
