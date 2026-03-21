@@ -1,3 +1,9 @@
+---
+description: ""
+covers: []
+updated: 2026-03-21
+---
+
 # Skills
 
 Slash-command skills for Claude Code. Invoke with `/skill-name` in any session.
@@ -20,5 +26,6 @@ Each skill has a `SKILL.md` (the execution definition Claude reads) and lives in
 | `named-build-tagging` | Tag multiple repos with the same version tag safely — dry-run, rollback, conflict detection |
 | `pr-generator` | Analyze branch diff and generate a full PR description; waits for approval before creating |
 | `request-triage` | Transform raw DevOps requests into structured MVRs with vault-based routing |
+| `setup-claude` | Run the setup script, sync symlinks, and display a summary of all skills, agents, and hooks |
 | `sonarqube-fixer` | Parse SonarQube JSON, categorize issues, fix with safety checks and commit strategy |
 | `task-definition` | Decompose an approved Parent MVR into verifiable Child MVTs via the task-architect agent |
