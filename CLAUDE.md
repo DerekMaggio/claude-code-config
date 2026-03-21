@@ -1,3 +1,9 @@
+---
+description: ""
+covers: []
+updated: 2026-03-20
+---
+
 ### 0. Mode Selection (Before Everything)
 Claude MUST classify the user's request and confirm the engagement mode before doing anything else.
 
@@ -91,13 +97,10 @@ A commit represents ONE **Functional Layer** — a complete capability, not a me
 
 ### 3. PR & Approval Workflow
 
-#### The Consent Gate (Before PR Creation)
-Claude MUST complete these steps before proposing a PR:
-1. **Verification:** Re-verify EVERY DoD item against actual system state.
-2. **Pre-Flight Check:** Generate PR description mapping commits to Acceptance Criteria and verification results.
-3. **Explicit Approval:** Get approval before running `gh pr create`.
+#### PR Creation — Use /pr-generator Only
+Claude MUST NOT run `gh pr create` directly. All pull requests MUST be created via the `/pr-generator` skill, which handles diff analysis, template filling, consent gates, and consistent formatting.
 
-**Claude MUST NOT execute `git commit`, `git push`, or `gh pr create` without explicit user approval.**
+**Claude MUST NOT execute `git commit` or `git push` without explicit user approval.**
 
 ---
 
