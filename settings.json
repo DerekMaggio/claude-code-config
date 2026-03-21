@@ -19,6 +19,10 @@
           },
           {
             "type": "command",
+            "command": "python3 ~/.claude/hooks/pre-commit-conventional-commit.py"
+          },
+          {
+            "type": "command",
             "command": "bash -c 'f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-commit-lint.sh\"; if [ -f \"$f\" ]; then bash \"$f\"; else exit 0; fi'"
           }
         ]
