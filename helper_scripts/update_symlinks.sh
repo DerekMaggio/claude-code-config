@@ -85,9 +85,6 @@ if [ -f "$REPO_PATH/settings.json" ]; then
   ln -sf "$REPO_PATH/settings.json" "$CLAUDE_CONFIG_DIR/settings.json"
 fi
 
-# --- SETUP SCRIPT ---
-ln -sf "$REPO_PATH/setup.sh" "$CLAUDE_CONFIG_DIR/setup.sh"
-
 # --- DEVOPS CONFIG ---
 if [ -f "$REPO_PATH/config/devops.json" ]; then
   ln -sf "$REPO_PATH/config/devops.json" "$CLAUDE_CONFIG_DIR/devops.json"

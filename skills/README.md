@@ -1,6 +1,6 @@
 ---
-description: ""
-covers: []
+description: "Overview of available Claude Code slash-command skills and their capabilities."
+covers: ["skills", "slash-commands", "automation", "claude-code"]
 updated: 2026-03-21
 ---
 

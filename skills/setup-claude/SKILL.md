@@ -22,7 +22,7 @@ bash "$REPO_ROOT/setup.sh" --skip-optional
 
 After setup completes, read the source files, extract the data, and **construct the tables yourself** with proper column alignment. Do not copy-paste raw README content.
 
-**Skills** — read `/home/derek-maggio/claude-code-config/skills/README.md` and extract each skill name and description.
+**Skills** — read `"$REPO_ROOT/skills/README.md"` and extract each skill name and description.
 
 **Agents** — resolve the repo root and read the agents README:
 ```bash
