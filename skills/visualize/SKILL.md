@@ -1,3 +1,9 @@
+---
+description: ""
+covers: []
+updated: 2026-03-27
+---
+
   ---
   name: visualize
   description: "Generate interactive HTML visualizations to explain work, architecture, and systems. Use this skill
@@ -172,17 +178,89 @@
       h2 { color: #58a6ff; margin: 2rem 0 1rem; border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; }
       .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
       .mermaid { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
+
+      /* Clickable diagrams — lightbox expand */
+      .diagram-container { cursor: pointer; position: relative; }
+      .diagram-container::after {
+        content: 'Click to expand'; position: absolute; bottom: 8px; right: 12px;
+        font-size: 0.7rem; color: #484f58; opacity: 0; transition: opacity 0.2s;
+      }
+      .diagram-container:hover::after { opacity: 1; }
+      .lightbox {
+        display: none; position: fixed; inset: 0; background: rgba(1,4,9,0.92);
+        z-index: 1000; justify-content: center; align-items: center; padding: 2rem; cursor: pointer;
+      }
+      .lightbox.active { display: flex; }
+      .lightbox-content {
+        background: #161b22; border: 1px solid #30363d; border-radius: 12px;
+        padding: 2rem; max-width: 95vw; max-height: 95vh; overflow: auto; cursor: default;
+      }
+      .lightbox-close {
+        position: fixed; top: 1rem; right: 1.5rem; color: #8b949e;
+        font-size: 2rem; cursor: pointer; z-index: 1001;
+      }
+      .lightbox-close:hover { color: #e6edf3; }
+
       /* Add more styles as needed for the specific visualization */
     </style>
   </head>
   <body>
     <!-- Content here -->
-    <script>mermaid.initialize({ startOnLoad: true, theme: 'dark' });</script>
+
+    <!-- Lightbox overlay — place before closing </body> -->
+    <div class="lightbox" id="lightbox">
+      <span class="lightbox-close" id="lightbox-close">&times;</span>
+      <div class="lightbox-content" id="lightbox-content"></div>
+    </div>
+
+    <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+
+    // Click-to-expand: any element with class "diagram-container" opens its SVG in a fullscreen lightbox
+    document.addEventListener('DOMContentLoaded', () => {
+      const lightbox = document.getElementById('lightbox');
+      const lbContent = document.getElementById('lightbox-content');
+      const lbClose = document.getElementById('lightbox-close');
+
+      document.querySelectorAll('.diagram-container').forEach(el => {
+        el.addEventListener('click', () => {
+          const svg = el.querySelector('svg');
+          if (!svg) return;
+          const clone = svg.cloneNode(true);
+          clone.style.width = '100%';
+          clone.style.height = 'auto';
+          clone.style.maxHeight = '85vh';
+          lbContent.innerHTML = '';
+          lbContent.appendChild(clone);
+          lightbox.classList.add('active');
+        });
+      });
+
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox || e.target === lbClose) lightbox.classList.remove('active');
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') lightbox.classList.remove('active');
+      });
+    });
+    </script>
   </body>
   </html>
 
   This is a starting point — extend it based on what the visualization needs. Add grids, stat cards, progress bars,
   concept tags, or whatever serves the content. The styling should feel polished, not like a raw HTML dump.
+
+  #### Clickable Diagrams
+
+  Every diagram container MUST be clickable and expand to fullscreen. To enable this:
+
+  1. Wrap each Mermaid diagram in a `<div class="diagram-container">` (not just `.mermaid`)
+  2. The lightbox CSS + JS in the template above handles the rest automatically
+  3. On hover, a "Click to expand" hint appears
+  4. On click, the SVG is cloned into a fullscreen lightbox overlay
+  5. Escape key or clicking outside closes the lightbox
+
+  This is especially important for complex diagrams that are hard to read at the default card size.
 
   Mermaid Tips
 
