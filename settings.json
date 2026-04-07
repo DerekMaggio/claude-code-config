@@ -24,6 +24,10 @@
           {
             "type": "command",
             "command": "bash -c 'f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-commit-lint.sh\"; if [ -f \"$f\" ]; then bash \"$f\"; else exit 0; fi'"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/pre-commit-session-log.sh"
           }
         ]
       }

@@ -1,7 +1,7 @@
 ---
 description: "Guidelines for Claude's engagement modes, gating rules, and skill-specific handling in this repository."
 covers: []
-updated: 2026-03-21
+updated: 2026-04-07
 ---
 
 ### 0. Mode Selection (Before Everything)
@@ -100,6 +100,21 @@ Run `git remote get-url origin` to determine the org/account:
 A commit represents ONE **Functional Layer** — a complete capability, not a mechanical step.
 **Format:** `<type>(<scope>): <description> [TICKET-123]`
 **Body:** Explain **why** (the intent), not **what** (the diff).
+
+#### Session Log Entry (Before Every Commit)
+Before running `git commit`, use Bash to append a JSONL entry to `~/.claude/session-logs/<project-slug>.jsonl` (e.g., `echo '...' >> <path>`):
+
+```json
+{"ts":"<ISO-8601>","session":"<session_id>","files":["file1.py","file2.py"],"narrative":"<what was done, why, decisions made>"}
+```
+
+**Rules:**
+- **session:** Use the `$CLAUDE_SESSION_ID` environment variable. If unavailable, use `"unknown"`.
+- **files:** List the files that will be staged in the upcoming commit.
+- **narrative:** Write as if briefing a colleague who will review the PR. Include what changed, why, key decisions or trade-offs, and any non-obvious context.
+- **Project slug:** Derive from `git remote get-url origin` → extract `org-repo` (e.g., `DerekMaggio-claude-code-config`). Fall back to the directory basename.
+- **Directory creation:** If `~/.claude/session-logs/` doesn't exist, create it.
+- **Bypass:** A commit message containing `[skip-log]` bypasses the enforcement hook.
 
 ---
 
