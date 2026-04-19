@@ -1,7 +1,7 @@
 ---
 description: "Guidelines for Claude's engagement modes, gating rules, and skill-specific handling in this repository."
 covers: []
-updated: 2026-03-21
+updated: 2026-04-11
 ---
 
 ### 0. Mode Selection (Before Everything)
@@ -101,14 +101,24 @@ A commit represents ONE **Functional Layer** — a complete capability, not a me
 **Format:** `<type>(<scope>): <description> [TICKET-123]`
 **Body:** Explain **why** (the intent), not **what** (the diff).
 
+#### Graphite Workflow (Required in gt-initialized repos)
+In any repo where `gt init` has been run (detectable by `.git/.graphite_cache_persist`), Claude MUST use graphite instead of raw git for commits and pushes:
+- **Instead of `git commit`:** use `gt create --all -m "<conventional commit message>"`.
+- **Instead of `git push`:** use `gt submit --no-interactive`.
+- **Amending:** use `gt modify --all` (amend) or `gt modify --commit --all -m "…"` (new commit) — both auto-restack descendants.
+- **Prefer the MCP tool (`mcp__graphite__run_gt_cmd`) for commit-producing calls** (`gt create`, `gt modify`, `gt submit`) — it takes structured `args`, avoiding shell-quoting landmines in commit messages (backticks, newlines, `$`). Bash `gt` is fine for read-only navigation (`gt log`, `gt ls`, `gt checkout`, `gt pr`).
+- **Raw git and Bash `gt` for commit ops are enforced via hook** (`prefer-gt.py`). Commit-content hooks (docs-check, conventional-commit) run on `gt create` / `gt modify` through the MCP as well. Include `[raw-git]` to bypass for recovery/setup.
+
 ---
 
 ### 3. PR & Approval Workflow
 
-#### PR Creation — Use /pr-generator Only
-Claude MUST NOT run `gh pr create` directly. All pull requests MUST be created via the `/pr-generator` skill, which handles diff analysis, template filling, and consistent formatting, and only creates the PR after the title and description are approved.
+#### PR Creation — Graphite-First
+In gt-initialized repos, PRs MUST be opened via `gt submit --no-interactive`. `/pr-generator` still owns title/description drafting — its output becomes the `gt create -m` message (which graphite uses as the PR body). Claude MUST NOT run `gh pr create` or `gh pr merge` directly; the `prefer-gt.py` hook enforces this.
 
-**Claude MUST NOT execute `git commit` or `git push` without explicit user approval.**
+In non-graphite repos, `/pr-generator` + `gh pr create` remains the workflow.
+
+**Claude MUST NOT execute `gt create`, `gt submit`, `git commit`, or `git push` without explicit user approval.**
 
 ---
 
