@@ -1,16 +1,17 @@
 ---
 name: github-task-retriever
-description: Retrieves and parses a GitHub Issue by owner/repo#number or URL, extracting title, body, labels, and checklist items as a human-readable Definition of Done for personal DerekMaggio repos.
+description: Retrieves and parses a GitHub Issue by owner/repo#number or URL, extracting title, body, labels, and checklist items as a human-readable Definition of Done for DerekMaggio or gossamer-io repos.
 allowed-tools: [Bash, mcp__github__get_issue, AskUserQuestion]
+updated: 2026-04-18
 ---
 
 # GitHub Issue Retriever
 
 ## 1. Purpose
-Automates retrieval and parsing of GitHub Issues from **DerekMaggio** repositories. Extracts the issue title, body, labels, and any checklist items to serve as the Definition of Done (DoD) for Mode A scoped work.
+Automates retrieval and parsing of GitHub Issues from **DerekMaggio** and **gossamer-io** repositories. Extracts the issue title, body, labels, and any checklist items to serve as the Definition of Done (DoD) for Mode A scoped work.
 
 ## 2. Trigger
-Invoke this skill when a user provides a **GitHub Issue reference** (e.g., `DerekMaggio/my-repo#42`) or a full GitHub issue URL, and the working repository is under the **DerekMaggio** org/account.
+Invoke this skill when a user provides a **GitHub Issue reference** (e.g., `DerekMaggio/my-repo#42`, `gossamer-io/some-repo#42`) or a full GitHub issue URL, and the working repository is under the **DerekMaggio** or **gossamer-io** org/account.
 
 ## 3. Workflow Logic
 
@@ -50,7 +51,7 @@ Present the data to the user:
 ## 4. Technical Constraints
 - **Null Handling**: If the body is empty or has no checklist items, flag this and initiate a DoD interview via `AskUserQuestion`.
 - **Naming**: Never abbreviate "Acceptance Criteria" to "AC".
-- **Org Scope**: This skill is for **DerekMaggio** repos only. For AgreeYa-HuLoop repos, use `devops-task-retriever`.
+- **Org Scope**: This skill is for **DerekMaggio** and **gossamer-io** repos. For AgreeYa-HuLoop repos, use `devops-task-retriever`.
 
 ## 5. Circuit Breakers
 - **Issue Not Found (404)**: Notify the user and offer to create a new issue using the `github-task-creator` skill.

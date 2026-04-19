@@ -65,5 +65,10 @@
     "command": "~/.claude/statusline-command.sh",
     "padding": 2
   },
-  "effortLevel": "medium"
+  "enabledPlugins": {
+    "code-review@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true
+  },
+  "effortLevel": "medium",
+  "skipAutoPermissionPrompt": true
 }

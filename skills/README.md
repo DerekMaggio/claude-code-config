@@ -1,7 +1,7 @@
 ---
 description: "Overview of available Claude Code slash-command skills and their capabilities."
 covers: ["skills", "slash-commands", "automation", "claude-code"]
-updated: 2026-03-21
+updated: 2026-04-17
 ---
 
 # Skills
@@ -25,6 +25,7 @@ Each skill has a `SKILL.md` (the execution definition Claude reads) and lives in
 | `monthly-customer-scheduling` | Pull Salesforce maintenance windows, map to Jira, create monthly Epic with deployment tickets |
 | `named-build-tagging` | Tag multiple repos with the same version tag safely — dry-run, rollback, conflict detection |
 | `pr-generator` | Analyze branch diff and generate a full PR description; waits for approval before creating |
+| `pr-tour` | Guided sectioned walkthrough of a PR or branch diff; saves a self-contained HTML artifact for later phone review |
 | `request-triage` | Transform raw DevOps requests into structured MVRs with vault-based routing |
 | `setup-claude` | Run the setup script, sync symlinks, and display a summary of all skills, agents, and hooks |
 | `sonarqube-fixer` | Parse SonarQube JSON, categorize issues, fix with safety checks and commit strategy |

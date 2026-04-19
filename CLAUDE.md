@@ -1,7 +1,7 @@
 ---
 description: "Guidelines for Claude's engagement modes, gating rules, and skill-specific handling in this repository."
 covers: []
-updated: 2026-04-11
+updated: 2026-04-18
 ---
 
 ### 0. Mode Selection (Before Everything)
@@ -45,13 +45,13 @@ After the user confirms the engagement mode, Claude MUST complete the appropriat
 **Repository Routing (Detect Before Any Ticket Work):**
 Run `git remote get-url origin` to determine the org/account:
 - URL contains `AgreeYa-HuLoop` → use **devops-task-retriever** / **devops-task-creator** (Jira DEVOPS project)
-- URL contains `DerekMaggio` → use **github-task-retriever** / **github-task-creator** (GitHub Issues)
+- URL contains `DerekMaggio` or `gossamer-io` → use **github-task-retriever** / **github-task-creator** (GitHub Issues)
 - Unknown / no remote → ask the user which workflow to use before proceeding
 
 **Requirement: Ticket Discovery & Content Approval**
 1. **Case 1: Existing Ticket / Issue ID Provided**
    - **AgreeYa-HuLoop repos:** Invoke **devops-task-retriever** to fetch Summary, Description, Acceptance Criteria (`customfield_10037`), and Customer (`customfield_10962`).
-   - **DerekMaggio repos:** Invoke **github-task-retriever** to fetch Title, Body, Labels, and checklist items as Acceptance Criteria.
+   - **DerekMaggio / gossamer-io repos:** Invoke **github-task-retriever** to fetch Title, Body, Labels, and checklist items as Acceptance Criteria.
    - Claude MUST present these details and ask:
      > "I've retrieved [Ticket/Issue ID]. I will use the Acceptance Criteria as my Definition of Done (DoD). Do you confirm this is the correct scope?"
    - **GATE:** If the Acceptance Criteria is too vague for DoD, Claude MUST use `AskUserQuestion` to refine them into verifiable facts.
@@ -59,7 +59,7 @@ Run `git remote get-url origin` to determine the org/account:
 2. **Case 2: No Ticket / Issue ID (New Work)**
    - **Discovery Interview:** Claude MUST use `AskUserQuestion` to interview the user for the required fields:
      - **AgreeYa-HuLoop:** Summary, Description, HuLoop Customer, and Definition of Done (DoD)
-     - **DerekMaggio:** Title, Description, Labels (optional), and Definition of Done (DoD)
+     - **DerekMaggio / gossamer-io:** Title, Description, Labels (optional), and Definition of Done (DoD)
    - **Content Review:** Claude MUST present the gathered information:
      > **Proposed Issue Details:**
      > - **Title/Summary:** [Text]
@@ -70,7 +70,7 @@ Run `git remote get-url origin` to determine the org/account:
      > "Does this look correct? Once confirmed, I will create the ticket/issue and obtain an ID."
    - **Issue Creation & ID Retrieval:**
      - **AgreeYa-HuLoop repos:** Invoke **devops-task-creator**
-     - **DerekMaggio repos:** Invoke **github-task-creator**
+     - **DerekMaggio / gossamer-io repos:** Invoke **github-task-creator**
    - **HARD GATE:** Claude MUST NOT proceed to the Final Approval Gate until the Ticket/Issue ID has been successfully generated and presented to the user.
 
 3. **Final Approval Gate (The Work Gate)**

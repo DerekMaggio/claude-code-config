@@ -11,4 +11,5 @@ VERSION=$(claude --version 2>/dev/null | head -1)
 BRANCH=$(git -C "$DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "n/a")
 
 # Output the status line - ${DIR##*/} extracts just the folder name
-echo "[$MODEL] 📁 ${DIR##*/} ($BRANCH) | ${PCT}% context | $VERSION"
+echo "[$MODEL] 📁 ${DIR##*/} ($BRANCH)"
+echo "${PCT}% context | $VERSION"
