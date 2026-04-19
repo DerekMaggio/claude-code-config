@@ -1,16 +1,17 @@
 ---
 name: github-task-creator
-description: Creates GitHub Issues in DerekMaggio repositories with structured title, body (markdown), and labels. Returns the issue URL and number for use as a Mode A scoped work reference.
+description: Creates GitHub Issues in DerekMaggio or gossamer-io repositories with structured title, body (markdown), and labels. Returns the issue URL and number for use as a Mode A scoped work reference.
 allowed-tools: [Bash, mcp__github__create_issue, AskUserQuestion]
+updated: 2026-04-18
 ---
 
 # GitHub Issue Creator
 
 ## 1. Purpose
-Automates the creation of GitHub Issues in **DerekMaggio** repositories. Ensures the issue body is structured with a description and a clear Acceptance Criteria checklist, and returns the issue URL and number as the scoped work reference.
+Automates the creation of GitHub Issues in **DerekMaggio** and **gossamer-io** repositories. Ensures the issue body is structured with a description and a clear Acceptance Criteria checklist, and returns the issue URL and number as the scoped work reference.
 
 ## 2. Trigger
-Invoke when the user asks to "create an issue," "open a task," or provides work details intended for a personal GitHub repo under the **DerekMaggio** account.
+Invoke when the user asks to "create an issue," "open a task," or provides work details intended for a GitHub repo under the **DerekMaggio** or **gossamer-io** org/account.
 
 ## 3. Extraction & Discovery
 Extract or ask the user for:
@@ -63,7 +64,7 @@ Present the result to the user:
 
 ## 5. Technical Constraints
 - **Naming**: Never abbreviate "Acceptance Criteria" to "AC".
-- **Org Scope**: This skill is for **DerekMaggio** repos only. For AgreeYa-HuLoop repos, use `devops-task-creator`.
+- **Org Scope**: This skill is for **DerekMaggio** and **gossamer-io** repos. For AgreeYa-HuLoop repos, use `devops-task-creator`.
 - **No ADF**: GitHub uses plain Markdown — do not attempt Atlassian Document Format construction.
 
 ## 6. Circuit Breakers

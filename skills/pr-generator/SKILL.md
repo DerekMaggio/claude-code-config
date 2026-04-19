@@ -2,6 +2,7 @@
 name: pr-generator
 description: Generates pull request descriptions by analyzing code changes and filling PR templates. Use when creating pull requests, drafting PR descriptions, or preparing a PR. Analyzes actual code diffs and commit history to generate content.
 allowed-tools: Bash(git:*), Read, Grep, Glob, AskUserQuestion
+updated: 2026-04-15
 ---
 
 # Pull Request Generator
@@ -236,6 +237,42 @@ Should I create this pull request?
 
 ### Step 6: Create PR (Only After Approval)
 
+**Detect graphite first:**
+```bash
+if [ -f .git/.graphite_cache_persist ]; then
+  USE_GT=1
+else
+  USE_GT=0
+fi
+```
+
+**Graphite repos (`USE_GT=1`) — use `gt submit` with explicit title/body flags so the drafted PR description is used verbatim instead of graphite's default commit-message-as-body behavior:**
+
+```bash
+gt submit --no-interactive \
+  --title "feat: add search functionality to user list" \
+  --body "$(cat <<'EOF'
+# Overview
+Adds search functionality to filter users by name and email on the user list page.
+
+# Related Tickets/PRs
+- Closes: https://{jira_domain}/browse/JIRA-1234
+
+# Changelog
+- Add SearchBar component in components/SearchBar.tsx
+- Implement client-side filtering in UserList.tsx
+
+# Test Plan
+- [ ] Verified search filters users correctly
+
+# Risk
+**Low Risk**
+EOF
+)"
+```
+
+**Non-graphite repos (`USE_GT=0`) — existing `gh pr create` path:**
+
 ```bash
 gh pr create --title "feat: add search functionality to user list" --base qa --body "$(cat <<'EOF'
 # Overview
@@ -269,6 +306,8 @@ No deployment changes required
 EOF
 )"
 ```
+
+**Note:** Never run `gh pr create` in a graphite repo — the `prefer-gt.py` PreToolUse hook will block it.
 
 ### Step 7: Post-PR Actions (Always run after PR creation)
 
@@ -398,6 +437,8 @@ From code changes, infer:
 - Inform user: "Using standard PR format (no template found)"
 
 ## Integration with Workflow Policy
+
+In graphite-initialized repos (detected via `.git/.graphite_cache_persist`), submission routes through `gt submit --no-interactive --title ... --body ...` per the global CLAUDE.md graphite-first rule. In all other repos, the existing `gh pr create` flow is used unchanged.
 
 This skill enforces your PR creation policy:
 1. ✅ Analyzes actual code changes (not assumptions)
