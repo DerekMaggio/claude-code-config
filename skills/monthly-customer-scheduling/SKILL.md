@@ -2,7 +2,7 @@
 name: monthly-customer-scheduling
 description: Retrieves customer maintenance windows from Salesforce, validates schedules, maps to Jira fields, and creates a monthly Epic with Customer Deployment tickets.
 allowed-tools: [Bash, AskUserQuestion, mcp__atlassian__createJiraIssue, mcp__atlassian__getJiraIssueTypeMetaWithFields, mcp__atlassian__searchJiraIssuesUsingJql]
-updated: 2026-03-31
+updated: 2026-05-13
 ---
 
 # Monthly Customer Scheduling
@@ -159,7 +159,7 @@ Before creating a new Epic, check if one already exists for the target month.
      ```
      Tool: mcp__atlassian__searchJiraIssuesUsingJql
      - cloudId: jira_cloud_id (from devops config)
-     - jql: "project = {jira_project_key} AND issuetype = 'Customer Deployment' AND 'Epic Link' = {EPIC_KEY}"
+     - jql: "project = {jira_project_key} AND issuetype = \"Customer Deployment\" AND \"Epic Link\" = \"{EPIC_KEY}\""
      ```
    - Parse existing tickets into a lookup set of `(normalized_customer_name, vm_name)` pairs from their summaries/descriptions.
 

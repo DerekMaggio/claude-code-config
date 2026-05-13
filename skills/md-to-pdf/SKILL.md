@@ -1,7 +1,8 @@
 ---
 name: md-to-pdf
 description: Convert a markdown file to a styled PDF with working clickable hyperlinks. Use whenever the user asks to "export this to PDF", "save as PDF", "make a PDF of this markdown", "convert .md to .pdf", or wants a sharable PDF version of a markdown document (summaries, reports, notes). The output uses a GitHub-style stylesheet (sans-serif body, blue underlined links, gray-bordered blockquotes, bordered headings) and preserves all hyperlinks as live, clickable PDF link annotations.
-updated: 2026-05-01
+allowed-tools: [Bash]
+updated: 2026-05-13
 ---
 
 # md-to-pdf

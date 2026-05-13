@@ -34,16 +34,21 @@ done
 [[ -z "$CHROME" ]] && { echo "No Chrome/Chromium binary found" >&2; exit 1; }
 
 TMP_HTML="$(mktemp --suffix=.html)"
-trap 'rm -f "$TMP_HTML"' EXIT
+CHROME_STDERR="$(mktemp)"
+trap 'rm -f "$TMP_HTML" "$CHROME_STDERR"' EXIT
 
 pandoc "$INPUT" -o "$TMP_HTML" --standalone -c "$CSS" --embed-resources
 
-"$CHROME" \
+if ! "$CHROME" \
   --headless \
   --disable-gpu \
   --no-sandbox \
   --no-pdf-header-footer \
   --print-to-pdf="$OUTPUT" \
-  "file://$TMP_HTML" 2>/dev/null
+  "file://$TMP_HTML" 2>"$CHROME_STDERR"; then
+  echo "Chrome failed to render PDF. stderr:" >&2
+  cat "$CHROME_STDERR" >&2
+  exit 1
+fi
 
-echo "Wrote $OUTPUT"
+echo "Wrote $(realpath "$OUTPUT")"

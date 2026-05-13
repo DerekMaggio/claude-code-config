@@ -25,7 +25,7 @@ die() {
 
 validate_args() {
   [[ $# -eq 3 ]] || die "repo, workflow, and timeout are all required. Usage: assassinate.sh <repo> <workflow> <timeout-seconds>"
-  [[ "$3" =~ ^[0-9]+$ ]] || die "timeout must be a positive integer (got: $3)"
+  [[ "$3" =~ ^[1-9][0-9]*$ ]] || die "timeout must be a positive integer (got: $3)"
 }
 
 resolve_owner_repo() {
@@ -106,7 +106,7 @@ fetch_live_run() {
 poll_for_run() {
   # Args: owner repo workflow_id workflow_name timeout
   # Echoes (on detection): JSON object for the run
-  # Exits 0 with no output on timeout (caller checks)
+  # Returns 1 on timeout (caller checks); error message emitted to stderr
   local owner="$1" repo="$2" wf_id="$3" wf_name="$4" timeout="$5"
   local start now elapsed last_heartbeat run_json
   start=$(date +%s)

@@ -4,7 +4,7 @@ description: >-
   Manage a personal task list stored as a pinned GitHub Issue in DerekMaggio/tasks.
   Add, complete, remove, and list tasks with High/Normal priority and optional due dates.
 allowed-tools: [mcp__github__get_issue, mcp__github__update_issue]
-updated: 2026-04-01
+updated: 2026-05-13
 ---
 
 # Todo — Personal Task List
@@ -88,10 +88,10 @@ Call `mcp__github__update_issue` with the reconstructed body. Always fetch lates
 ## 6. Constraints
 - Never close the issue.
 - Never auto-remove completed tasks.
-- List is read-only (no writes).
+- The list command is read-only; add/done/remove perform writes.
 - Fetch before every write to avoid overwrites.
 
 ## 7. Errors
-- **404:** "Task list issue not found. Would you like me to recreate it?"
+- **404:** "Task list issue not found. This skill cannot create issues — please create issue `DerekMaggio/tasks#1` manually and pin it, then retry."
 - **API error:** Show the error, don't retry.
 - **Malformed body:** Show raw body, ask user how to proceed.
