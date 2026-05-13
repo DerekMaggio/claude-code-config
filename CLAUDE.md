@@ -1,7 +1,7 @@
 ---
-description: "Guidelines for Claude's engagement modes, gating rules, and skill-specific handling in this repository."
+description: "Global engagement modes, gating rules, and skill-specific handling for Claude Code across all projects."
 covers: []
-updated: 2026-04-11
+updated: 2026-05-13
 ---
 
 ### 0. Mode Selection (Before Everything)
@@ -23,16 +23,10 @@ These are read-only, bounded, or self-contained actions with no ticket, branch, 
 
 **Mode-Exempt Skills:** The following skills also bypass mode selection:
 - `monthly-customer-scheduling` — Self-contained workflow with its own validation gates
-- `github-workflow-monitor` — Trigger and monitor a GitHub Actions workflow
+- `gha-run` — Trigger and monitor a GitHub Actions workflow
 - `install4j-doc-expert` — Tiered documentation lookup; executes directly without mode gates
+- `todo` — Personal task list; executes directly without mode gates
 
-
----
-
-### 4. Skill-Specific Handling (Deterministic Reporting)
-The agent MUST NOT perform automatic Root Cause Analysis (RCA), log investigation, or "Next Steps" generation for the output of the following skills:
-
-- **github-workflow-monitor**: This skill provides a deterministic report. If the output contains `RAW WORKFLOW DATA` or is wrapped in `<details>` blocks, the agent MUST simply present the data and wait for user input. Do NOT attempt to "fix" or "analyze" a workflow failure unless explicitly requested by the user.
 
 ---
 
@@ -47,6 +41,7 @@ Run `git remote get-url origin` to determine the org/account:
 - URL contains `AgreeYa-HuLoop` → use **devops-task-retriever** / **devops-task-creator** (Jira DEVOPS project)
 - URL contains `DerekMaggio` → use **github-task-retriever** / **github-task-creator** (GitHub Issues)
 - Unknown / no remote → ask the user which workflow to use before proceeding
+- If neither workflow applies, downgrade to Mode B (exploratory) until the user provides a ticket source
 
 **Requirement: Ticket Discovery & Content Approval**
 1. **Case 1: Existing Ticket / Issue ID Provided**
@@ -122,10 +117,35 @@ In non-graphite repos, `/pr-generator` + `gh pr create` remains the workflow.
 
 ---
 
-### 5. Gemini Bridge MCP — File Access Rules
-The Gemini bridge runs in a Docker container with a single read-only bind mount: `~/workspace` → `/workspace`.
+### 4. Skill-Specific Handling (Deterministic Reporting)
+The agent MUST NOT perform automatic Root Cause Analysis (RCA), log investigation, or "Next Steps" generation for the output of the following skills:
 
-- Gemini **CANNOT** access `/tmp`, `/home`, or any path outside `~/workspace`.
-- When passing files to Gemini: place them inside the workspace first, then reference them by their **container-internal path** (e.g., `/workspace/huloop-dev-tools/foo.diff`).
-- **Never** use host-absolute paths like `/home/derek-maggio/workspace/...` — Gemini sees `/workspace/...`.
-- The `include_directory` parameter can mount one additional host directory into the container for a single query.
+- **gha-run**: This skill provides a deterministic report of GitHub Actions workflow runs. If the output contains `RAW WORKFLOW DATA` or is wrapped in `<details>` blocks, the agent MUST simply present the data and wait for user input. Do NOT attempt to "fix" or "analyze" a workflow failure unless explicitly requested by the user — RCA is the job of the **gha-analyze** skill, which the user must invoke explicitly.
+
+---
+
+### 5. Natural Language Task List
+When the user says any of the following, invoke the `/todo` skill with the appropriate command:
+- "remind me to ...", "I need to remember to ...", "add ... to my list" → `/todo add <task>`
+- "what's on my list?", "what do I need to do?", "show my tasks" → `/todo list`
+- "done with N", "finished task N", "mark N done" → `/todo done N`
+
+---
+
+### 6. Facts and Pushback (Anti-Hallucination + Architectural Sparring)
+
+**Vendor / external facts — verification is mandatory:**
+- Do NOT state pricing, SLAs, quotas, limits, API behavior, or vendor-doc claims (Microsoft/Azure, GitHub, SonarCloud/SonarQube, Atlassian, Cloudflare, AWS, GCP, npm packages, etc.) from memory. Verify via `WebFetch` or an authoritative source first.
+- If a fact cannot be verified, say so explicitly: "I don't know — I haven't verified this." Do not paper over uncertainty with confident-sounding language.
+- When citing a fact, include the URL you actually fetched. No URL = no claim.
+- For CLI flags, API endpoints, or config keys: verify against `--help`, the official docs page, or the source — not training-data recall.
+
+**Architectural sparring — be a peer, not a cheerleader:**
+- The user is using Claude as an expert sounding board. Default to scrutiny, not agreement.
+- When the user proposes a design, approach, or architecture, you MUST: (1) name at least one concrete weakness, risk, or failure mode in their proposal, (2) name at least one alternative worth considering, (3) state which you'd choose and why. Skipping any of these is a failure.
+- Do NOT open with "Great idea" / "That's a solid approach" / "Makes sense" — these are filler. Lead with the substance: the tradeoff, the risk, or the question you'd want answered first.
+- If the user's premise looks wrong, say "I think the premise is wrong because..." — do not refine the wording of a flawed plan.
+- Disagreement requires a reason: cite the constraint, the failure mode, or the doc that contradicts the proposal. "I disagree" without a reason is noise.
+- If you genuinely agree, say so once and move on — do not flatter. Reserve enthusiasm for cases where you'd actually defend the choice in a design review.
+
+**Hedging discipline:** "Probably", "I think", "should work" are acceptable ONLY when paired with what would make you certain (a doc to check, a test to run, a question to ask). Bare hedges without a path to certainty are forbidden.

@@ -1,7 +1,8 @@
 ---
 name: monthly-customer-scheduling
 description: Retrieves customer maintenance windows from Salesforce, validates schedules, maps to Jira fields, and creates a monthly Epic with Customer Deployment tickets.
-allowed-tools: [Bash, AskUserQuestion, mcp__atlassian__createJiraIssue, mcp__atlassian__getJiraIssueTypeMetaWithFields]
+allowed-tools: [Bash, AskUserQuestion, mcp__atlassian__createJiraIssue, mcp__atlassian__getJiraIssueTypeMetaWithFields, mcp__atlassian__searchJiraIssuesUsingJql]
+updated: 2026-05-13
 ---
 
 # Monthly Customer Scheduling
@@ -41,6 +42,14 @@ bash skills/monthly-customer-scheduling/helper_scripts/fetch_maintenance_data.sh
 ```
 
 **Important:** The `maintenance_start` and `maintenance_end` times from Salesforce are in **Pacific Time** (PST/PDT). These must be converted to ISO 8601 with the correct offset in Step E.
+
+### Step C2: Exclude List Filtering
+After extracting Salesforce data, filter out customers listed in `scheduling_exclude_list` (from devops config).
+
+1. Read the `scheduling_exclude_list` array from devops config.
+2. For each customer record, compare the Salesforce `Name` (case-insensitive) against the exclude list.
+3. **Remove** matching customers from the working dataset entirely.
+4. Track excluded customers for reporting in Step F.
 
 ### Step D: Jira Metadata & Field Mapping (Crucial Step)
 Before calculating dates, fetch Jira metadata to ensure correct field mapping for a Classic Project.
@@ -114,46 +123,90 @@ Verify SF customer names map correctly to Jira options.
 - ❌ Date calculation error — will be skipped
 - ⚠️ No Jira match found — will use default customer
 
-**Action:** Ask user: "Review both tables. Rows with ❌ will be skipped. Rows with ⚠️ will default to the default customer. Proceed?"
-
-### Step G: Epic Creation
-Create the monthly Epic:
+**Table 3 — Excluded Customers**
+List customers removed by the exclude list (from Step C2).
 
 ```
-Tool: mcp__atlassian__createJiraIssue
-- projectKey: jira_project_key (from devops config)
-- issueTypeName: Epic
-- summary: "{TARGET_MONTH} {TARGET_YEAR} Maintenance"
-- description: "Monthly maintenance deployment window."
-- additional_fields:
-    - {jira_customer_field}: [{"id": "{jira_all_customers_id}"}]   # use values from devops config
+┌──────────────────┬────────────────┬────────┐
+│ SF Customer      │ Servers        │ Reason │
+├──────────────────┼────────────────┼────────┤
+│ Ethos Connect    │ 3 servers      │ Exclude List │
+└──────────────────┴────────────────┴────────┘
 ```
-Store `EPIC_KEY` (e.g., DEVOPS-1234).
 
-### Step H: Ticket Creation
+**Status Legend:**
+- ✅ Valid
+- ❌ Date calculation error — will be skipped
+- ⚠️ No Jira match found — will use default customer
+- 🚫 Excluded by exclude list
+
+**Action:** Ask user: "Review all tables. Rows with ❌ will be skipped. Rows with ⚠️ will default to the default customer. Excluded customers are listed in Table 3. Proceed?"
+
+### Step G: Epic Discovery or Creation
+Before creating a new Epic, check if one already exists for the target month.
+
+1. **Search for Existing Epic:**
+   ```
+   Tool: mcp__atlassian__searchJiraIssuesUsingJql
+   - cloudId: jira_cloud_id (from devops config)
+   - jql: "project = {jira_project_key} AND issuetype = Epic AND summary ~ \"{TARGET_MONTH} {TARGET_YEAR} Maintenance\""
+   ```
+
+2. **If Epic Found:**
+   - Store the existing `EPIC_KEY`.
+   - Inform the user: "Found existing Epic [EPIC_KEY]. Will file tickets under it."
+   - **Fetch existing child tickets** to detect duplicates:
+     ```
+     Tool: mcp__atlassian__searchJiraIssuesUsingJql
+     - cloudId: jira_cloud_id (from devops config)
+     - jql: "project = {jira_project_key} AND issuetype = \"Customer Deployment\" AND \"Epic Link\" = \"{EPIC_KEY}\""
+     ```
+   - Parse existing tickets into a lookup set of `(normalized_customer_name, vm_name)` pairs from their summaries/descriptions.
+
+3. **If No Epic Found:**
+   - Create a new Epic:
+     ```
+     Tool: mcp__atlassian__createJiraIssue
+     - projectKey: jira_project_key (from devops config)
+     - issueTypeName: Epic
+     - summary: "{TARGET_MONTH} {TARGET_YEAR} Maintenance"
+     - description: "Monthly maintenance deployment window."
+     - additional_fields:
+         - {jira_customer_field}: [{"id": "{jira_all_customers_id}"}]   # use values from devops config
+     ```
+   - Store `EPIC_KEY`.
+
+### Step H: Ticket Creation (with Duplicate Detection)
 Loop through **VALID** rows only.
 
-```
-Tool: mcp__atlassian__createJiraIssue
-- projectKey: jira_project_key (from devops config)
-- issueTypeName: Customer Deployment
-- summary: "{Jira_Match_Name} - {TARGET_MONTH} {TARGET_YEAR} Deployment"
-- description: "SF Customer: {SF_Name}\nServer: {vm_name}\nWindow: {deployment_window_begin} to {deployment_window_end}"
-- additional_fields:
-    - {EPIC_LINK_FIELD_ID}: "[EPIC_KEY]"   <-- Uses the field ID found in Step D
-    - {jira_customer_field}: [{"id": "[jira_option_id]"}]
-    - {jira_deployment_start_field}: "[deployment_window_begin ISO]"
-    - {jira_deployment_end_field}: "[deployment_window_end ISO]"
-```
+1. **Duplicate Check:** For each row, check if a `(customer_name, vm_name)` pair already exists in the Epic's child tickets (from Step G.2).
+   - **If duplicate found:** Skip creation, log as "DUPLICATE — [existing_ticket_key]".
+   - **If no duplicate:** Create the ticket.
+
+2. **Create Ticket:**
+   ```
+   Tool: mcp__atlassian__createJiraIssue
+   - projectKey: jira_project_key (from devops config)
+   - issueTypeName: Customer Deployment
+   - summary: "{Jira_Match_Name} - {TARGET_MONTH} {TARGET_YEAR} Deployment"
+   - description: "SF Customer: {SF_Name}\nServer: {vm_name}\nWindow: {deployment_window_begin} to {deployment_window_end}"
+   - additional_fields:
+       - {EPIC_LINK_FIELD_ID}: "[EPIC_KEY]"   <-- Uses the field ID found in Step D
+       - {jira_customer_field}: [{"id": "[jira_option_id]"}]
+       - {jira_deployment_start_field}: "[deployment_window_begin ISO]"
+       - {jira_deployment_end_field}: "[deployment_window_end ISO]"
+   ```
 
 *Note: If `EPIC_LINK_FIELD_ID` was not found in Step D, use `parent: {"key": "[EPIC_KEY]"}` as fallback.*
 
 ### Step I: Finalize
 1. Open the Epic: `xdg-open "https://{jira_domain}/browse/[EPIC_KEY]"` (use `jira_domain` from devops config)
 2. Output summary:
-   - "Created Epic [EPIC_KEY]"
+   - "Epic: [EPIC_KEY] (created / reused existing)"
    - "Created X tickets."
    - "Skipped Y records due to errors."
+   - "Skipped Z records as duplicates."
+   - "Excluded N customers via exclude list."
 
 ## 4. Error Handling
 - **Mapping Failures:** If a customer maps to the default unexpectedly, the user *must* catch this in Step F. If they proceed, log a warning.

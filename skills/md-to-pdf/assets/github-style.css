@@ -1,0 +1,30 @@
+@page { margin: 0.75in; }
+body {
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #24292f;
+  max-width: 100%;
+}
+h1, h2, h3 { color: #1f2328; border-bottom: 1px solid #d0d7de; padding-bottom: 0.2em; }
+h1 { font-size: 1.6em; }
+h2 { font-size: 1.3em; margin-top: 1.5em; }
+h3 { font-size: 1.1em; border-bottom: none; }
+a { color: #0969da; text-decoration: underline; }
+a:visited { color: #0969da; }
+blockquote {
+  border-left: 4px solid #d0d7de;
+  padding: 0.4em 1em;
+  color: #57606a;
+  margin: 1em 0;
+  background: #f6f8fa;
+}
+code { background: #f6f8fa; padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.9em; }
+pre { background: #f6f8fa; padding: 0.8em; border-radius: 4px; overflow-x: auto; }
+pre code { background: transparent; padding: 0; }
+strong { color: #1f2328; }
+ol, ul { padding-left: 1.5em; }
+li { margin-bottom: 0.3em; }
+table { border-collapse: collapse; margin: 1em 0; }
+th, td { border: 1px solid #d0d7de; padding: 0.4em 0.8em; }
+th { background: #f6f8fa; }
