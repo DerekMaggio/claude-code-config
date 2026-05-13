@@ -1,2 +1,3 @@
 ghostty*.deb
 config/devops.json
+hooks/__pycache__/
