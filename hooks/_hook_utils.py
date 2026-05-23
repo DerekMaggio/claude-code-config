@@ -11,31 +11,18 @@ from __future__ import annotations
 import json
 import os
 import re
-import shlex
 import subprocess
 import sys
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
-
-# ── Tool names (wire values) ──────────────────────────────────────────────────
-
-TOOL_BASH = "Bash"
-TOOL_GT_MCP = "mcp__graphite__run_gt_cmd"
 
 # ── Hook protocol (wire values) ───────────────────────────────────────────────
 
 HOOK_EVENT = "PreToolUse"
 DECISION_DENY = "deny"
 
-# ── Graphite ──────────────────────────────────────────────────────────────────
-
-MESSAGE_FLAGS = ("-m", "--message")
-MESSAGE_FLAG_EQ = "--message="
-
 # ── Bypass tokens ─────────────────────────────────────────────────────────────
 
-BYPASS_RAW_GIT = "[raw-git]"
 BYPASS_DOCS_DEFAULT = "[docs-ok]"
 
 # ── Env ───────────────────────────────────────────────────────────────────────
@@ -43,24 +30,7 @@ BYPASS_DOCS_DEFAULT = "[docs-ok]"
 ENV_PROJECT_DIR = "CLAUDE_PROJECT_DIR"
 
 
-class DenyMode(str, Enum):
-    """Which raw action the prefer-gt hook is gating."""
-    COMMIT = "commit"
-    PUSH = "push"
-    PR_CREATE = "pr-create"
-    PR_MERGE = "pr-merge"
-    GT_BASH = "gt-bash"
-
-
-class GtSubcommand(str, Enum):
-    """gt subcommands that produce or amend a commit."""
-    CREATE = "create"
-    MODIFY = "modify"
-
-
-COMMIT_PRODUCING_RE = re.compile(
-    r"git\s+commit|gt\s+(?:" + "|".join(s.value for s in GtSubcommand) + r")"
-)
+COMMIT_PRODUCING_RE = re.compile(r"git\s+commit")
 
 
 def is_commit_producing(command: str) -> bool:
@@ -91,7 +61,7 @@ def _extract_bash_commit_message(command: str) -> str | None:
 
 @dataclass(frozen=True)
 class HookInput:
-    """Parsed stdin payload with unified access across tool shapes."""
+    """Parsed stdin payload for the Bash tool."""
     tool_name: str
     tool_input: dict
 
@@ -110,42 +80,16 @@ class HookInput:
     def bash_command(self) -> str:
         return self.tool_input.get("command", "")
 
-    @property
-    def gt_args(self) -> list[str]:
-        return self.tool_input.get("args", []) or []
-
-    @property
-    def is_gt_mcp(self) -> bool:
-        return self.tool_name == TOOL_GT_MCP
-
     def normalized_command(self) -> str:
-        """Return a shell-like command string for either tool shape."""
-        if self.is_gt_mcp:
-            args = self.gt_args
-            return "gt " + " ".join(shlex.quote(a) for a in args) if args else ""
         return self.bash_command
 
-    def gt_message(self) -> str | None:
-        """Extract -m/--message from gt create/modify (MCP form)."""
-        args = self.gt_args
-        if not args or args[0] not in {s.value for s in GtSubcommand}:
-            return None
-        for i, a in enumerate(args):
-            if a in MESSAGE_FLAGS and i + 1 < len(args):
-                return args[i + 1].strip()
-            if a.startswith(MESSAGE_FLAG_EQ):
-                return a.split("=", 1)[1].strip()
-        return None
-
     def commit_message(self) -> str | None:
-        """Commit message from either Bash (-m / heredoc) or MCP (args)."""
-        if self.is_gt_mcp:
-            return self.gt_message()
+        """Commit message from a Bash `git commit -m` / heredoc invocation."""
         return _extract_bash_commit_message(self.bash_command)
 
     def bypass_haystack(self) -> str:
         """Text to scan for bypass tokens — covers both command and message."""
-        return self.normalized_command() + " " + (self.commit_message() or "")
+        return self.bash_command + " " + (self.commit_message() or "")
 
 
 @dataclass(frozen=True)
