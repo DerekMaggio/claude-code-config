@@ -11,7 +11,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash|mcp__graphite__run_gt_cmd",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
