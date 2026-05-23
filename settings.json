@@ -11,15 +11,6 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/prefer-gt.py"
-          }
-        ]
-      },
-      {
         "matcher": "Bash|mcp__graphite__run_gt_cmd",
         "hooks": [
           {
